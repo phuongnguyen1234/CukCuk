@@ -4,7 +4,11 @@ dist
 
 # .NET
 bin
-obj
+CukCuk.Backend/CukCuk.Backend.Api/obj/
+CukCuk.Backend/CukCuk.Backend.Core/obj/
+CukCuk.Backend/CukCuk.Backend.Infrastructure/obj/
+CukCuk.Backend/CukCuk.Backend.Api/wwwroot/uploads/
+CukCuk.Backend/.vs/
 
 # Env
 .env
@@ -13,4 +17,4 @@ appsettings.Development.json
 # OS
 .DS_Store
 
-CukCuk.Backend/CukCuk.Backend.Api/wwwroot/uploads/
+
