@@ -1,0 +1,8 @@
+:root {
+  --border-control-normal: #d5d7da;
+  --border-control-hover: #245fdf;
+  --border-control-error: #f04438;
+
+  --color-primary: #245fdf;
+  --color-icon: #717680;
+}

@@ -1,0 +1,14 @@
+# Node
+node_modules
+dist
+
+# .NET
+bin
+obj
+
+# Env
+.env
+appsettings.Development.json
+
+# OS
+.DS_Store

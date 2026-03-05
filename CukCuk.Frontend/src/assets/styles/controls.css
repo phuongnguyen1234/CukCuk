@@ -1,0 +1,19 @@
+.input_form {
+  border: 1px solid var(--border-control-normal);
+  height: 32px;
+  padding: 0 16px;
+  outline: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+select:hover,
+input:hover {
+  border-color: var(--border-control-hover);
+}
+
+.input--error {
+  border-color: var(--border-control-error) !important;
+}

@@ -1,0 +1,111 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A0379378-04F4-4A6C-9B9A-5DBDF8157D85}|CukCuk.Backend.Api\\CukCuk.Backend.Api.csproj|h:\\documents\\internship misa\\cukcuk\\cukcuk.backend\\cukcuk.backend.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A0379378-04F4-4A6C-9B9A-5DBDF8157D85}|CukCuk.Backend.Api\\CukCuk.Backend.Api.csproj|solutionrelative:cukcuk.backend.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0379378-04F4-4A6C-9B9A-5DBDF8157D85}|CukCuk.Backend.Api\\CukCuk.Backend.Api.csproj|h:\\documents\\internship misa\\cukcuk\\cukcuk.backend\\cukcuk.backend.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A0379378-04F4-4A6C-9B9A-5DBDF8157D85}|CukCuk.Backend.Api\\CukCuk.Backend.Api.csproj|solutionrelative:cukcuk.backend.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C29D18E2-3048-49B7-9D3F-90BA26A367D4}|CukCuk.Backend.Core\\CukCuk.Backend.Core.csproj|h:\\documents\\internship misa\\cukcuk\\cukcuk.backend\\cukcuk.backend.core\\validators\\unitdtovalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C29D18E2-3048-49B7-9D3F-90BA26A367D4}|CukCuk.Backend.Core\\CukCuk.Backend.Core.csproj|solutionrelative:cukcuk.backend.core\\validators\\unitdtovalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F48FD23C-E47C-4079-8425-6AA770D75C97}|CukCuk.Backend.Infrastructure\\CukCuk.Backend.Infrastructure.csproj|h:\\documents\\internship misa\\cukcuk\\cukcuk.backend\\cukcuk.backend.infrastructure\\repository\\unitrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F48FD23C-E47C-4079-8425-6AA770D75C97}|CukCuk.Backend.Infrastructure\\CukCuk.Backend.Infrastructure.csproj|solutionrelative:cukcuk.backend.infrastructure\\repository\\unitrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "CukCuk.Backend.Api\\appsettings.json",
+              "ToolTip": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Api\\appsettings.json",
+              "RelativeToolTip": "CukCuk.Backend.Api\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-05T13:31:14.049Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Api\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "CukCuk.Backend.Api\\appsettings.Development.json",
+              "ToolTip": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Api\\appsettings.Development.json",
+              "RelativeToolTip": "CukCuk.Backend.Api\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-05T13:31:04.679Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UnitRepository.cs",
+              "DocumentMoniker": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Infrastructure\\Repository\\UnitRepository.cs",
+              "RelativeDocumentMoniker": "CukCuk.Backend.Infrastructure\\Repository\\UnitRepository.cs",
+              "ToolTip": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Infrastructure\\Repository\\UnitRepository.cs",
+              "RelativeToolTip": "CukCuk.Backend.Infrastructure\\Repository\\UnitRepository.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAgwBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T15:09:58.812Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UnitDtoValidator.cs",
+              "DocumentMoniker": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Core\\Validators\\UnitDtoValidator.cs",
+              "RelativeDocumentMoniker": "CukCuk.Backend.Core\\Validators\\UnitDtoValidator.cs",
+              "ToolTip": "H:\\Documents\\internship MISA\\CukCuk\\CukCuk.Backend\\CukCuk.Backend.Core\\Validators\\UnitDtoValidator.cs",
+              "RelativeToolTip": "CukCuk.Backend.Core\\Validators\\UnitDtoValidator.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAgwCkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T15:09:49.771Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

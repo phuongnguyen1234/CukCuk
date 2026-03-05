@@ -1,0 +1,12 @@
+@import url('https://testcdnamisapp.misacdn.net/fonts/font.inter.css');
+@import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css');
+@import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css');
+@import url('./variables.css');
+@import url('./controls.css');
+@import url('./main.css');
+/*body*/
+body {
+  font-family: 'Inter';
+  margin: 0;
+  padding: 0;
+}
