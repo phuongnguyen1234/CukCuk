@@ -12,3 +12,5 @@ appsettings.Development.json
 
 # OS
 .DS_Store
+
+CukCuk.Backend/CukCuk.Backend.Api/wwwroot/uploads/
