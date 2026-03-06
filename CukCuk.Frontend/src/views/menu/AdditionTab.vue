@@ -35,8 +35,8 @@
           </svg>
         </div>
         <span class="info-text"
-          >Chọn sở thích phục vụ cho món ăn. Giá thu thêm sẽ được tự động cập nhật theo sở thích đã
-          chọn.</span
+          >Ghi lại các sở thích của khách hàng giúp nhân viên phục vụ chọn nhanh order.<br />
+          VD: không cay/ ít hành/ thêm phomai...</span
         >
       </div>
 
@@ -45,7 +45,7 @@
         <!-- Action Bar -->
         <div class="content_body_actions">
           <div class="search_box">
-            <Searchbar v-model="searchQuery" placeholder="Tìm kiếm sở thích phục vụ" />
+            <Searchbar v-model="searchQuery" placeholder="Tìm kiếm" />
           </div>
         </div>
 
@@ -79,7 +79,7 @@
 
           <!-- Row Actions (Chỉ có nút xóa) -->
           <template #row-actions="{ index }">
-            <ButtonIcon variant="outline" title="Xóa" @click="removeRow(index)">
+            <ButtonIcon variant="danger-outline" title="Xóa" @click="removeRow(index)">
               <svg
                 width="16"
                 height="16"
@@ -89,7 +89,7 @@
               >
                 <path
                   d="M2 4H3.33333H14M12.6667 4V13.3333C12.6667 13.687 12.5262 14.0261 12.2761 14.2761C12.0261 14.5262 11.687 14.6667 11.3333 14.6667H4.66667C4.31304 14.6667 3.97391 14.5262 3.72386 14.2761C3.47381 14.0261 3.33333 13.687 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2.31305 5.47381 1.97391 5.72386 1.72386C5.97391 1.47381 6.31304 1.33333 6.66667 1.33333H9.33333C9.68696 1.33333 10.0261 1.47381 10.2761 1.72386C10.5262 1.97391 10.6667 2.31305 10.6667 2.66667V4M6.66667 7.33333V11.3333M9.33333 7.33333V11.3333"
-                  stroke="#E61D1D"
+                  stroke="currentColor"
                   stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -265,7 +265,7 @@ function onAdditionChange(selectedItem, index) {
 
 .table-container {
   border: 1px solid #e0e6ec;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
 }
 

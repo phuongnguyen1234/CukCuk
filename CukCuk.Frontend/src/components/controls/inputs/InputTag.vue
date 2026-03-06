@@ -99,7 +99,7 @@ const handleBackspace = () => {
   min-height: 36px;
   padding: 3px 8px;
   border: 1px solid #e0e6ec;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: #fff;
   cursor: text;
   width: 100%;

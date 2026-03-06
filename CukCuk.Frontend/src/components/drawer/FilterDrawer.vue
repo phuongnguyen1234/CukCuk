@@ -4,7 +4,12 @@
       <Searchbar v-model="searchText" />
 
       <div class="filter-list">
-        <div v-for="item in filteredColumns" :key="item.key" class="filter-item">
+        <div
+          v-for="item in filteredColumns"
+          :key="item.key"
+          class="filter-item"
+          :class="{ 'is-active': item.checked }"
+        >
           <div class="filter-item-row">
             <input type="checkbox" :id="item.key" v-model="item.checked" class="m-checkbox" />
             <label :for="item.key" class="filter-label">{{ item.label }}</label>
@@ -23,7 +28,7 @@
             </template>
 
             <!-- Kiểu Number -->
-            <template v-else-if="item.type === 'number'">
+            <template v-else-if="item.type === 'number' || item.type === 'currency'">
               <Select
                 v-model="item.operator"
                 :options="numberOperations"
@@ -75,6 +80,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  appliedFilters: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['close', 'apply'])
@@ -102,38 +111,38 @@ const numberOperations = [
 const boolOptions = ['Có', 'Không']
 
 watch(
-  () => props.columns,
-  (newCols) => {
-    // Tạo map từ state hiện tại để tra cứu nhanh
-    const currentMap = new Map(filterState.value.map((i) => [i.key, i]))
+  () => [props.columns, props.appliedFilters],
+  ([newCols, newAppliedFilters]) => {
+    const appliedMap = new Map(newAppliedFilters.map((f) => [f.key, f]))
 
     filterState.value = newCols.map((col) => {
-      const existing = currentMap.get(col.key)
-      // Nếu đã có state cũ thì giữ lại giá trị user đã nhập/chọn, chỉ cập nhật options mới
-      if (existing) {
+      const applied = appliedMap.get(col.key)
+      // Nếu cột này đang được áp dụng bộ lọc từ bên ngoài, khởi tạo state với giá trị đó
+      if (applied) {
         return {
           ...col,
-          checked: existing.checked,
-          operator: existing.operator,
-          value: existing.value,
+          checked: true,
+          operator: applied.operator,
+          value: applied.value,
+          options: col.options || [],
         }
       }
-      // Nếu chưa có thì khởi tạo mặc định
+      // Nếu không, khởi tạo state mặc định
       return {
         ...col,
         checked: false,
         operator:
-          col.type === 'number'
+          col.type === 'number' || col.type === 'currency'
             ? FilterOperation.Equals
             : col.type === 'boolean' || col.type === 'bool'
               ? FilterOperation.Equals
               : FilterOperation.Contains,
-        value: col.type === 'number' ? '' : [],
+        value: col.type === 'number' || col.type === 'currency' ? '' : [],
         options: col.options || [],
       }
     })
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 const filteredColumns = computed(() => {
@@ -145,15 +154,16 @@ const filteredColumns = computed(() => {
 function resetFilters() {
   filterState.value.forEach((item) => {
     item.checked = false
-    item.value = item.type === 'number' ? '' : []
+    item.value = item.type === 'number' || item.type === 'currency' ? '' : []
     item.operator =
-      item.type === 'number'
+      item.type === 'number' || item.type === 'currency'
         ? FilterOperation.Equals
         : item.type === 'boolean' || item.type === 'bool'
           ? FilterOperation.Equals
           : FilterOperation.Contains
   })
-  emit('apply', [])
+  // Sau khi bỏ lọc, áp dụng ngay thay đổi (danh sách rỗng)
+  applyFilters()
 }
 
 function applyFilters() {
@@ -168,20 +178,26 @@ function applyFilters() {
   flex-direction: column;
   gap: 12px;
   height: 100%;
+  padding: 0 8px;
 }
 
 .filter-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;
-  flex: 1;
 }
 
 .filter-item {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.filter-item.is-active {
+  background-color: #f0f6fe;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 0 -8px;
 }
 
 .filter-item-row {
@@ -200,7 +216,6 @@ function applyFilters() {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-left: 24px;
 }
 
 .m-checkbox {

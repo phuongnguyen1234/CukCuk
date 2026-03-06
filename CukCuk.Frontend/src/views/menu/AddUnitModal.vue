@@ -144,7 +144,7 @@ async function handleSave() {
 <style scoped>
 .textarea-custom {
   border: 1px solid #d0d5dd;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
   font-family: inherit;

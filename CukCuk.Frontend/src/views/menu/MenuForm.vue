@@ -1,5 +1,6 @@
 <template>
   <ThePageContainer :title="title" :can-go-back="true" @back="handleCancel">
+    <Loading v-if="isLoading" />
     <template #header-left>
       <div class="header-left-content">
         <SelectLabel
@@ -93,6 +94,7 @@ import inventoryItemTypeService from '@/services/inventory-item-type-service.js'
 import AddCategoryModal from './AddCategoryModal.vue'
 import AddUnitModal from './AddUnitModal.vue'
 import AddAdditionModal from './AddAdditionModal.vue'
+import Loading from '@/components/base/Loading.vue'
 
 const props = defineProps({
   modelValue: {
@@ -118,6 +120,7 @@ const isCancelConfirmVisible = ref(false)
 const isAddCategoryModalVisible = ref(false)
 const isAddUnitModalVisible = ref(false)
 const isAddAdditionModalVisible = ref(false)
+const isLoading = ref(false)
 
 const isEditMode = computed(() => !!item.value?.inventoryItemId)
 
@@ -219,6 +222,7 @@ watch(
     loadedId.value = newId
 
     if (newId) {
+      isLoading.value = true
       // Chế độ sửa: gọi API để lấy dữ liệu chi tiết
       InventoryItemService.getById(newId)
         .then((data) => {
@@ -231,6 +235,9 @@ watch(
           console.error('Failed to fetch item details:', err)
           showToast('Không thể tải chi tiết món.', 'error')
           emit('close')
+        })
+        .finally(() => {
+          isLoading.value = false
         })
     } else {
       // Chế độ thêm mới: kiểm tra và load bản nháp

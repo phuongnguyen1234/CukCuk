@@ -1,14 +1,27 @@
 <template>
   <div class="modal" v-show="visible">
     <!--overlay-->
-    <div class="overlay" @click="close"></div>
+    <Overlay :has-overlay="hasOverlay" @close="close" />
 
     <!--modal-->
-    <div class="form" :style="{ width: width }">
+    <div class="form" :style="modalStyle">
       <!--form header-->
       <div class="form_header">
         <div class="form_header_title">
-          <slot name="title"></slot>
+          <div class="title-text">
+            <slot name="title"></slot>
+          </div>
+
+          <!-- Option 2: Nút close nằm ngay bên phải title -->
+          <ButtonIcon
+            v-if="closePosition === 'title'"
+            variant="text"
+            @click="close"
+            title="Đóng"
+            class="close-btn-title"
+          >
+            <CloseIcon />
+          </ButtonIcon>
         </div>
 
         <div class="form_header_actions">
@@ -30,7 +43,8 @@
             </svg>
           </ButtonIcon>
           <slot name="header-actions"></slot>
-          <ButtonIcon variant="text" @click="close" title="Đóng">
+          <!-- Option 1 (Default): Nút close nằm sát lề phải -->
+          <ButtonIcon v-if="closePosition === 'right'" variant="text" @click="close" title="Đóng">
             <CloseIcon />
           </ButtonIcon>
         </div>
@@ -51,15 +65,27 @@
 
 <script setup>
 import CloseIcon from '@/components/icons/CloseIcon.vue'
+import { computed } from 'vue'
+import Overlay from './Overlay.vue'
 import ButtonIcon from '@/components/controls/buttons/ButtonIcon.vue'
 
-defineProps({
+const props = defineProps({
   visible: Boolean,
   info: String,
   width: {
     type: String,
     default: '450px',
   },
+  hasOverlay: {
+    type: Boolean,
+    default: true,
+  },
+  closePosition: {
+    type: String,
+    default: 'right', // 'right' | 'title'
+  },
+  top: String,
+  left: String,
 })
 
 const emit = defineEmits(['update:visible'])
@@ -67,6 +93,17 @@ const emit = defineEmits(['update:visible'])
 function close() {
   emit('update:visible', false)
 }
+
+const modalStyle = computed(() => {
+  const style = { width: props.width }
+  if (props.top) style.top = props.top
+  if (props.left) style.left = props.left
+  // Khi top hoặc left được set, bỏ transform mặc định để định vị chính xác
+  if (props.top || props.left) {
+    style.transform = 'none'
+  }
+  return style
+})
 </script>
 
 <style scoped>
@@ -80,20 +117,7 @@ function close() {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
-}
-
-.overlay {
-  width: 100%;
-  height: 100%;
-  background-color: black;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 30%;
-  z-index: 200;
+  z-index: var(--z-index-modal);
 }
 
 .form {
@@ -106,7 +130,7 @@ function close() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 300;
+  z-index: calc(var(--z-index-overlay) + 1);
   display: flex;
   flex-direction: column;
   border-radius: 8px;
@@ -123,6 +147,18 @@ function close() {
 .form_header_title {
   font-weight: 700;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  flex-grow: 1; /* Cho phép title group chiếm không gian, đẩy actions group sang phải */
+  min-width: 0; /* Quan trọng để overflow hoạt động trong flex item */
+}
+.title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.close-btn-title {
+  margin-left: 8px;
 }
 .form_header_actions {
   display: flex;

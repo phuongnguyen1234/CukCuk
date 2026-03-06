@@ -39,8 +39,6 @@ function selectTab(tab) {
 </template>
 
 <style scoped>
-@import url('@/assets/styles/variables.css');
-
 .m-tabs-container {
   display: flex;
   flex-direction: column;
@@ -73,6 +71,11 @@ function selectTab(tab) {
   color: #111;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
+}
+
+.m-tab-item:not(.active):hover {
+  color: var(--color-primary);
+  border-bottom-color: #e0e0e0;
 }
 
 .m-tab-item.active {

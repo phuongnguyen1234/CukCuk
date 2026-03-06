@@ -16,7 +16,6 @@
           <FormInputRow label="Tên món" required :error="errors.inventoryItemName">
             <Input
               v-model="item.inventoryItemName"
-              placeholder="Nhập tên món"
               @blur="$emit('validate-field', 'inventoryItemName')"
             />
           </FormInputRow>
@@ -25,7 +24,6 @@
           <FormInputRow label="Mã món" required :error="errors.inventoryItemCode">
             <Input
               v-model="item.inventoryItemCode"
-              placeholder="Nhập mã món"
               @blur="$emit('validate-field', 'inventoryItemCode')"
             />
           </FormInputRow>
@@ -34,7 +32,6 @@
           <FormInputRow label="Tên món theo ngôn ngữ khác" :error="errors.inventoryItemLangName">
             <Input
               v-model="item.inventoryItemLangName"
-              placeholder="Nhập tên món (EN)"
               @blur="$emit('validate-field', 'inventoryItemLangName')"
             />
           </FormInputRow>
@@ -48,7 +45,7 @@
                   :options="courseOptions"
                   option-label="label"
                   option-value="value"
-                  placeholder="Chọn thứ tự"
+                  placeholder="Chọn thứ tự món"
                   style="width: 204px"
                 />
               </div>
@@ -63,7 +60,7 @@
               :options="categoryOptions"
               option-label="inventoryItemCategoryName"
               option-value="inventoryItemCategoryId"
-              placeholder="Chọn nhóm"
+              placeholder="Chọn nhóm thực đơn"
               searchable="true"
               :show-add-button="true"
               @add="$emit('add-new-category')"
@@ -141,7 +138,7 @@
                 class="input_form textarea-custom"
                 :class="{ 'input--error': errors.inventoryItemDescription }"
                 v-model="item.inventoryItemDescription"
-                placeholder="Nhập mô tả"
+                placeholder="Nhập thông tin mô tả về món ăn"
                 @blur="$emit('validate-field', 'inventoryItemDescription')"
               ></textarea>
               <Button variant="outline" class="btn-ai-generate">
@@ -160,8 +157,17 @@
     <FormSection title="Thuế suất">
       <!-- Nhóm ngành nghề -->
       <FormInputSection>
-        <FormInputRow label="Nhóm ngành nghề" tooltip="Món thuộc ngành nào">
-          <Select placeholder="Chọn nhóm ngành nghề" />
+        <FormInputRow
+          label="Nhóm ngành nghề"
+          tooltip="Món ăn/đồ uống thuộc ngành nghề nào để xác định thuế suất"
+        >
+          <Select
+            :options="businessCategoryOptions"
+            :model-value="'eating_service'"
+            option-label="label"
+            option-value="value"
+            placeholder="Chọn nhóm ngành nghề"
+          />
         </FormInputRow>
 
         <!-- Tỷ lệ thuế -->
@@ -277,6 +283,11 @@ watch(
   { deep: true },
 )
 
+const businessCategoryOptions = [
+  { label: 'Dịch vụ ăn uống', value: 'eating_service' },
+  // Thêm các option khác ở đây nếu cần
+]
+
 let codeGenerationTimeout = null
 watch(
   () => item.value.inventoryItemName,
@@ -368,10 +379,11 @@ function onFileChange(file) {
 }
 
 .textarea-custom {
-  height: 80px;
-  resize: none;
+  min-height: 76px;
+  resize: vertical;
   padding: 8px 12px;
   font-family: inherit;
+  max-height: 200px;
 }
 
 /* Style đặc biệt cho nút AI */
@@ -390,9 +402,10 @@ function onFileChange(file) {
     linear-gradient(to right, #1482ff, #cf11ff) border-box !important;
 }
 
-.btn-ai-generate :deep(.m-btn-text) {
+.btn-ai-generate :deep(.m-btn__text) {
   background: linear-gradient(to right, #1482ff, #cf11ff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 600;
 }

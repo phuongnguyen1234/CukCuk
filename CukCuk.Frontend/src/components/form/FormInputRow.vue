@@ -81,6 +81,7 @@ defineProps({
   color: #111;
   display: flex;
   align-items: center;
+  min-width: 200px;
 }
 
 .required {
@@ -111,7 +112,7 @@ defineProps({
   background-color: #e61d1d;
   color: #fff;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
   z-index: 9;
   white-space: nowrap;

@@ -69,7 +69,7 @@ const updateValue = (event) => {
   height: 16px;
   cursor: pointer;
   margin: 0;
-  accent-color: #2680eb; /* Màu xanh primary khi checked */
+  accent-color: var(--color-primary);
 }
 
 .m-checkbox-label {

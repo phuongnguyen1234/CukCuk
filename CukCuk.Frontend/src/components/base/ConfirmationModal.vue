@@ -41,7 +41,8 @@ defineProps({
   confirmButtonVariant: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'outline', 'danger'].includes(value),
+    validator: (value) =>
+      ['primary', 'secondary', 'outline', 'danger', 'text', 'danger-outline'].includes(value),
   },
 })
 
@@ -53,6 +54,7 @@ function onConfirm() {
 
 function onCancel() {
   emit('cancel')
+  emit('update:visible', false)
 }
 
 function onClose() {

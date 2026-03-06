@@ -115,8 +115,10 @@ onMounted(() => {
   overflow: hidden;
   white-space: nowrap;
   width: 100%;
-  height: 34px; /* Để khớp với chiều cao của các input khác */
+  height: 32px;
   padding: 0 12px;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 .label-prefix {

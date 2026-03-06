@@ -180,7 +180,6 @@ import Setting from '@/components/icons/SettingIcon.vue'
 </template>
 
 <style scoped>
-@import url('../assets/styles/variables.css');
 /*style navbar*/
 .navbar {
   display: flex;
@@ -224,9 +223,8 @@ import Setting from '@/components/icons/SettingIcon.vue'
 
 .navbar_left_restaurant_chooser {
   min-width: 30%;
-  width: 400px;
-  font-size: 16px;
-  padding: 6px 8px 6px 0;
+  font-size: 14px;
+  padding: 6px 12px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -235,14 +233,14 @@ import Setting from '@/components/icons/SettingIcon.vue'
     box-shadow 0.2s ease;
   margin-left: 10px;
   color: #fff;
-  align-items: center;
   gap: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.navbar_left_restaurant_chooser i {
-  margin: 0 10px;
-  color: #6a727d;
-  font-size: 14px;
+.navbar_left_restaurant_chooser:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .navbar_right {
@@ -354,6 +352,8 @@ import Setting from '@/components/icons/SettingIcon.vue'
   height: 24px;
   border-radius: 50%;
   background-position: center;
+  border: 1px solid #d5d7da;
+  background-size: contain;
 }
 
 /*end of style navbar*/

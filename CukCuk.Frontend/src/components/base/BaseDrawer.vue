@@ -52,6 +52,7 @@ defineEmits(['close'])
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  padding: 0 8px;
 }
 
 .m-drawer-title {

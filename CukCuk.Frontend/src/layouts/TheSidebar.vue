@@ -425,8 +425,16 @@
     </div>
 
     <!--sidebar toggle button-->
-    <button class="sidebar_toggle" @click="emit('toggle')">
-      <div class="sidebar_toggle_icon">
+    <Button
+      class="sidebar_toggle"
+      variant="outline"
+      :active="isExpanded"
+      :min-width="40"
+      height="40px"
+      @click="emit('toggle')"
+    >
+      <template #icon>
+        <!-- Right arrow icon -->
         <svg
           width="17"
           height="10"
@@ -442,9 +450,74 @@
             stroke-linejoin="round"
           />
         </svg>
-      </div>
-      <div class="sidebar_toggle_text">Thu gọn</div>
-    </button>
+      </template>
+      <template #icon-active>
+        <!-- Left arrow icon -->
+        <svg
+          fill="currentColor"
+          version="1.1"
+          id="Layer_1"
+          xmlns:x="&amp;ns_extend;"
+          xmlns:i="&amp;ns_ai;"
+          xmlns:graph="&amp;ns_graphs;"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          width="64px"
+          height="64px"
+          viewBox="0 0 24 24"
+          enable-background="new 0 0 24 24"
+          xml:space="preserve"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <metadata>
+              <sfw xmlns="&amp;ns_sfw;">
+                <slices></slices>
+                <slicesourcebounds
+                  width="505"
+                  height="984"
+                  bottomleftorigin="true"
+                  x="0"
+                  y="-120"
+                ></slicesourcebounds>
+              </sfw>
+            </metadata>
+            <g>
+              <g>
+                <g>
+                  <path
+                    d="M20,24H4c-2.2,0-4-1.8-4-4V4c0-2.2,1.8-4,4-4h16c2.2,0,4,1.8,4,4v16C24,22.2,22.2,24,20,24z M4,2C2.9,2,2,2.9,2,4v16 c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V4c0-1.1-0.9-2-2-2H4z"
+                  ></path>
+                </g>
+              </g>
+              <g>
+                <g>
+                  <path
+                    d="M8,24c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1s1,0.4,1,1v22C9,23.6,8.6,24,8,24z"
+                  ></path>
+                </g>
+              </g>
+              <g>
+                <g>
+                  <path
+                    d="M14,13c-0.3,0-0.5-0.1-0.7-0.3c-0.4-0.4-0.4-1,0-1.4l3-3c0.4-0.4,1-0.4,1.4,0s0.4,1,0,1.4l-3,3C14.5,12.9,14.3,13,14,13z "
+                  ></path>
+                </g>
+              </g>
+              <g>
+                <g>
+                  <path
+                    d="M17,16c-0.3,0-0.5-0.1-0.7-0.3l-3-3c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l3,3c0.4,0.4,0.4,1,0,1.4C17.5,15.9,17.3,16,17,16z "
+                  ></path>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </template>
+      <div v-if="isExpanded" class="sidebar_toggle_text">Thu gọn</div>
+    </Button>
   </div>
 </template>
 
@@ -456,7 +529,7 @@
   width: 72px;
   bottom: 0;
   left: 0;
-  padding: 32px 0 16px;
+  padding: 16px 0 16px;
   background-color: #fff;
   box-sizing: border-box;
   display: none;
@@ -464,8 +537,7 @@
   background-repeat: no-repeat;
   background-size: cover;
   transition: width 0.3s ease;
-  border-right: 1px;
-  border-color: #e9eaeb;
+  border-right: 1px solid #e9eaeb;
 }
 
 .sidebar_active {
@@ -571,9 +643,9 @@
 
 .sidebar_toggle_text {
   color: inherit;
-  display: none;
   white-space: nowrap;
   font-size: 14px;
+  animation: fadeIn 0.3s ease;
 }
 
 .sidebar_menu_arrow {
@@ -592,47 +664,27 @@
 }
 
 .sidebar_toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  width: auto; /* Để chiều rộng tự động co giãn theo lề */
-  margin: 0 16px; /* Cách lề trái và phải 16px */
-  padding: 0 12px; /* Giữ padding bên trong cho nội dung */
-  border: 1px solid #e9eaeb;
-  border-radius: 8px; /* Bo tròn các góc */
-  transition: all 0.2s ease;
+  /* Button component handles most styles. We just need to position it. */
+  margin: 0 16px;
   flex-shrink: 0;
-  color: black;
-  background-color: #fff;
-  cursor: pointer;
   z-index: 1;
-  gap: 10px;
+}
+
+.sidebar_expanded .sidebar_toggle {
+  justify-content: center;
 }
 
 .sidebar_toggle:hover {
   background-color: #f5faff;
 }
 
-.sidebar_expanded .sidebar_toggle_text {
-  display: block;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 /*end of style sidebar*/
 </style>
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import Button from '@/components/controls/buttons/Button.vue'
 import ArrowDownIcon from '@/components/icons/ArrowDownIcon.vue'
 
 const props = defineProps({

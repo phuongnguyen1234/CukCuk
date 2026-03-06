@@ -11,15 +11,33 @@
               minWidth: header.minWidth,
               ...pinnedOffset(colIndex),
             }"
+            class="table-header-cell"
+            @click="onHeaderClick(header, $event)"
           >
-            <div class="cell-content" :style="{ textAlign: header.align }">
-              <!-- Slot cho header nếu cần custom (ví dụ checkbox header) -->
-              <slot v-if="header.headerSlot" :name="`header-${header.key}`" :header="header">
-                {{ header.label }}
-              </slot>
-              <template v-else>
-                {{ header.label }}
-              </template>
+            <div class="cell-content" :style="{ justifyContent: getFlexAlign(header.align) }">
+              <div class="header-label" :style="{ textAlign: header.align }">
+                <!-- Slot cho header nếu cần custom (ví dụ checkbox header) -->
+                <slot v-if="header.headerSlot" :name="`header-${header.key}`" :header="header">
+                  {{ header.label }}
+                </slot>
+                <template v-else>
+                  {{ header.label }}
+                </template>
+              </div>
+              <span v-if="activeFilterKeys.includes(header.key)" class="filter-indicator">
+                <svg
+                  width="12"
+                  height="13"
+                  viewBox="0 0 12 13"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11.3333 0H0.666667C0.489856 0 0.320286 0.0702379 0.195262 0.195262C0.0702379 0.320286 0 0.489856 0 0.666667V2.15133L0.00533326 2.3C0.0385388 2.74515 0.219709 3.16639 0.52 3.49667L3.33333 6.59067V12C3.33331 12.1056 3.35839 12.2098 3.4065 12.3038C3.45461 12.3978 3.52438 12.4791 3.61006 12.5409C3.69574 12.6027 3.79488 12.6432 3.8993 12.6592C4.00373 12.6751 4.11044 12.666 4.21067 12.6327L8.21067 11.2993L8.28267 11.2707C8.39748 11.2169 8.49458 11.1315 8.56259 11.0246C8.63061 10.9176 8.66671 10.7934 8.66667 10.6667V6.276L11.414 3.52933C11.5999 3.3435 11.7473 3.12285 11.8479 2.87999C11.9484 2.63714 12.0001 2.37685 12 2.114V0.666667C12 0.489856 11.9298 0.320286 11.8047 0.195262C11.6797 0.0702379 11.5101 0 11.3333 0Z"
+                    fill="#245FDF"
+                  />
+                </svg>
+              </span>
             </div>
           </th>
           <!-- Header cho cột action, không có text, chỉ để giữ chỗ và sticky -->
@@ -45,7 +63,7 @@
               ...pinnedOffset(colIndex),
             }"
           >
-            <div class="cell-content" :style="{ textAlign: header.align }">
+            <div class="cell-content" :style="{ justifyContent: getCellJustify(header.align) }">
               <!-- Custom slot -->
               <slot
                 v-if="header.type === 'custom'"
@@ -128,8 +146,12 @@ const props = defineProps({
     type: String,
     default: 'id',
   },
+  activeFilterKeys: {
+    type: Array,
+    default: () => [],
+  },
 })
-defineEmits(['row-dblclick', 'row-click', 'update:data'])
+const emit = defineEmits(['row-dblclick', 'row-click', 'update:data', 'header-click'])
 
 function getWidthNumber(width) {
   if (!width) return 0
@@ -152,10 +174,29 @@ function pinnedOffset(colIndex) {
   return {
     position: 'sticky',
     left: offset + 'px',
-    zIndex: 5,
+    zIndex: 'var(--z-index-table-pinned)',
     background: '#fff',
     boxShadow: '2px 0 4px rgba(0,0,0,0.05)',
   }
+}
+
+function onHeaderClick(header, event) {
+  // Chỉ emit cho các cột có thể lọc được (nếu có cờ `filterable`)
+  if (header.filterable !== false) {
+    emit('header-click', header, event)
+  }
+}
+
+function getFlexAlign(align) {
+  if (align === 'right') return 'flex-end'
+  if (align === 'center') return 'center'
+  return 'space-between'
+}
+
+function getCellJustify(align) {
+  if (align === 'right') return 'flex-end'
+  if (align === 'center') return 'center'
+  return 'flex-start'
 }
 </script>
 
@@ -179,7 +220,7 @@ function pinnedOffset(colIndex) {
   position: sticky;
   top: 0;
   background-color: #fafafa;
-  z-index: 2;
+  z-index: var(--z-index-table-header);
   height: 36px;
   padding: 0; /* Padding is now on the inner cell-content */
   text-align: left;
@@ -202,11 +243,35 @@ function pinnedOffset(colIndex) {
 }
 
 .cell-content {
+  display: flex;
+  align-items: center;
   padding: 0 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-all; /* Fallback in case the content is still too long */
+}
+
+.table-header-cell {
+  cursor: pointer;
+}
+
+.table-header-cell:hover {
+  background-color: #f2f9ff;
+}
+
+.header-label {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-indicator {
+  margin-left: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .boolean-cell {
@@ -259,7 +324,7 @@ function pinnedOffset(colIndex) {
 }
 
 .sticky-action-cell {
-  z-index: 10; /* Đảm bảo nằm trên các cột khác khi cuộn */
+  z-index: var(--z-index-table-action); /* Đảm bảo nằm trên các cột khác khi cuộn */
 }
 
 /* Khi hover vào row, cell action cũng đổi màu */
@@ -269,6 +334,6 @@ function pinnedOffset(colIndex) {
 
 /* Header của cột action phải có z-index cao hơn header thường */
 .sticky-action-header {
-  z-index: 11;
+  z-index: calc(var(--z-index-table-action) + 1);
 }
 </style>

@@ -1,5 +1,7 @@
 <template>
   <!--content header-->
+  <Loading v-if="isLoading" />
+
   <TheContent v-if="!isOpen" title="Thực đơn">
     <template #header>
       <ButtonGroup>
@@ -28,7 +30,21 @@
         <!--thêm mới-->
         <Button variant="primary" @click="openModal">
           <template #icon>
-            <i class="fi fi-rr-plus"></i>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7.99992 3.33334V12.6667M3.33325 8H12.6666"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
           </template>
           Thêm</Button
         >
@@ -121,7 +137,13 @@
         </ButtonIcon>
 
         <!--btn filter-->
-        <ButtonIcon variant="outline" title="Lọc" @click="isFilterDrawerOpen = true">
+        <ButtonIcon
+          variant="outline"
+          title="Lọc"
+          :active="isFilterDrawerOpen"
+          @click="isFilterDrawerOpen = !isFilterDrawerOpen"
+        >
+          <!-- Icon mặc định (outline) -->
           <svg
             width="13"
             height="13"
@@ -137,12 +159,33 @@
               stroke-linejoin="round"
             />
           </svg>
+          <!-- Icon khi active (filled) -->
+          <template #icon-active>
+            <svg
+              width="12"
+              height="13"
+              viewBox="0 0 12 13"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M11.3333 0H0.666667C0.489856 0 0.320286 0.0702379 0.195262 0.195262C0.0702379 0.320286 0 0.489856 0 0.666667V2.15133L0.00533326 2.3C0.0385388 2.74515 0.219709 3.16639 0.52 3.49667L3.33333 6.59067V12C3.33331 12.1056 3.35839 12.2098 3.4065 12.3038C3.45461 12.3978 3.52438 12.4791 3.61006 12.5409C3.69574 12.6027 3.79488 12.6432 3.8993 12.6592C4.00373 12.6751 4.11044 12.666 4.21067 12.6327L8.21067 11.2993L8.28267 11.2707C8.39748 11.2169 8.49458 11.1315 8.56259 11.0246C8.63061 10.9176 8.66671 10.7934 8.66667 10.6667V6.276L11.414 3.52933C11.5999 3.3435 11.7473 3.12285 11.8479 2.87999C11.9484 2.63714 12.0001 2.37685 12 2.114V0.666667C12 0.489856 11.9298 0.320286 11.8047 0.195262C11.6797 0.0702379 11.5101 0 11.3333 0Z"
+                fill="#245FDF"
+              />
+            </svg>
+          </template>
         </ButtonIcon>
       </ButtonGroup>
     </div>
 
     <!--content table-->
-    <Table :headers="visibleTableHeaders" :data="tableData" @row-dblclick="editItem">
+    <Table
+      :headers="visibleTableHeaders"
+      :data="tableData"
+      :active-filter-keys="activeFilterKeys"
+      @row-dblclick="editItem"
+      @header-click="handleHeaderClick"
+    >
       <!-- Row Actions Overlay -->
       <template #row-actions="{ data }">
         <ButtonGroup>
@@ -156,7 +199,7 @@
             >
               <path
                 d="M12.6667 2.66667C13.0203 2.31305 13.5 2.11437 14 2.11437C14.5 2.11437 14.9797 2.31305 15.3333 2.66667C15.687 3.02029 15.8856 3.5 15.8856 4C15.8856 4.5 15.687 4.97971 15.3333 5.33333L5.33333 15.3333H2.66667V12.6667L12.6667 2.66667Z"
-                stroke="#5E636E"
+                stroke="currentColor"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -173,14 +216,14 @@
             >
               <path
                 d="M13.3333 6H14C14.3536 6 14.6928 6.14048 14.9428 6.39052C15.1929 6.64057 15.3333 6.97971 15.3333 7.33333V14C15.3333 14.3536 15.1929 14.6928 14.9428 14.9428C14.6928 15.1929 14.3536 15.3333 14 15.3333H7.33333C6.97971 15.3333 6.64057 15.1929 6.39052 14.9428C6.14048 14.6928 6 14.3536 6 14V13.3333M10.6667 10H4C3.64638 10 3.30724 9.85952 3.05719 9.60948C2.80714 9.35943 2.66667 9.02029 2.66667 8.66667V2C2.66667 1.64638 2.80714 1.30724 3.05719 1.05719C3.30724 0.807142 3.64638 0.666667 4 0.666667H10.6667C11.0203 0.666667 11.3594 0.807142 11.6095 1.05719C11.8595 1.30724 12 1.64638 12 2V8.66667C12 9.02029 11.8595 9.35943 11.6095 9.60948C11.3594 9.85952 11.0203 10 10.6667 10Z"
-                stroke="#5E636E"
+                stroke="currentColor"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
             </svg>
           </ButtonIcon>
-          <ButtonIcon variant="outline" title="Xóa" @click="deleteItem(data)">
+          <ButtonIcon variant="danger-outline" title="Xóa" @click="deleteItem(data)">
             <svg
               width="16"
               height="16"
@@ -190,7 +233,7 @@
             >
               <path
                 d="M2 4H3.33333H14M12.6667 4V13.3333C12.6667 13.687 12.5262 14.0261 12.2761 14.2761C12.0261 14.5262 11.687 14.6667 11.3333 14.6667H4.66667C4.31304 14.6667 3.97391 14.5262 3.72386 14.2761C3.47381 14.0261 3.33333 13.687 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2.31305 5.47381 1.97391 5.72386 1.72386C5.97391 1.47381 6.31304 1.33333 6.66667 1.33333H9.33333C9.68696 1.33333 10.0261 1.47381 10.2761 1.72386C10.5262 1.97391 10.6667 2.31305 10.6667 2.66667V4M6.66667 7.33333V11.3333M9.33333 7.33333V11.3333"
-                stroke="#E61D1D"
+                stroke="currentColor"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -211,6 +254,7 @@
     <template #sidebar>
       <FilterDrawer
         v-show="isFilterDrawerOpen"
+        :applied-filters="appliedFilters"
         :columns="filterDrawerColumns"
         @close="isFilterDrawerOpen = false"
         @apply="handleFilterApply"
@@ -225,6 +269,17 @@
     @close="isOpen = false"
     @save="handleSave"
     @save-and-add="handleSaveAndAdd"
+  />
+
+  <QuickFilterModal
+    v-if="isQuickFilterVisible"
+    v-model:visible="isQuickFilterVisible"
+    :column="currentQuickFilterColumn"
+    :filter="currentQuickFilterData"
+    :top="quickFilterPosition.top"
+    :left="quickFilterPosition.left"
+    @apply="handleQuickFilterApply"
+    @reset="handleQuickFilterReset"
   />
 
   <ConfirmationModal
@@ -276,10 +331,12 @@ import Setting from '@/components/icons/SettingIcon.vue'
 import Pagination from '@/components/controls/pagination/Pagination.vue'
 import { CourseText } from '@/models/enums/course.js'
 import FilterDrawer from '@/components/drawer/FilterDrawer.vue'
+import QuickFilterModal from '@/components/controls/tables/QuickFilterModal.vue'
 import ConfirmationModal from '@/components/base/ConfirmationModal.vue'
 import MenuForm from './MenuForm.vue'
 import TableSetting from '@/components/base/TableSetting.vue'
 import InventoryItemService from '@/services/inventory-item-service.js'
+import Loading from '@/components/base/Loading.vue'
 import { pascalToSnakeCase } from '@/utils/string-util.js'
 
 const isOpen = ref(false)
@@ -293,9 +350,13 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const isFilterDrawerOpen = ref(false)
 const appliedFilters = ref([])
+const isQuickFilterVisible = ref(false)
+const quickFilterPosition = ref({ top: '0px', left: '0px' })
+const currentQuickFilterColumn = ref(null)
 const isConfirmModalVisible = ref(false)
 const itemToDelete = ref(null)
 const confirmMessage = ref('')
+const isLoading = ref(false)
 
 const getDefaultColumns = () => [
   {
@@ -306,6 +367,7 @@ const getDefaultColumns = () => [
     width: 120,
     visible: true,
     pinned: false,
+    filterable: true,
   },
   {
     key: 'inventoryItemCode',
@@ -315,6 +377,7 @@ const getDefaultColumns = () => [
     width: 100,
     visible: true,
     pinned: false,
+    filterable: true,
   },
   {
     key: 'inventoryItemName',
@@ -324,6 +387,7 @@ const getDefaultColumns = () => [
     width: 200,
     visible: true,
     pinned: false,
+    filterable: true,
   },
   {
     key: 'inventoryItemCategoryName',
@@ -333,6 +397,7 @@ const getDefaultColumns = () => [
     width: 150,
     visible: true,
     pinned: false,
+    filterable: true,
   },
   {
     key: 'unitName',
@@ -342,6 +407,7 @@ const getDefaultColumns = () => [
     width: 100,
     visible: true,
     pinned: false,
+    filterable: false,
   },
   {
     key: 'inventoryItemCostPrice',
@@ -351,6 +417,7 @@ const getDefaultColumns = () => [
     width: 120,
     visible: true,
     pinned: false,
+    filterable: false,
   },
   {
     key: 'inventoryItemPrice',
@@ -360,6 +427,7 @@ const getDefaultColumns = () => [
     width: 120,
     visible: true,
     pinned: false,
+    filterable: false,
   },
   {
     key: 'inventoryItemIsMarketPrice',
@@ -369,6 +437,7 @@ const getDefaultColumns = () => [
     width: 170,
     visible: true,
     pinned: false,
+    filterable: false,
   },
   {
     key: 'inventoryItemAllowPriceOverride',
@@ -378,6 +447,7 @@ const getDefaultColumns = () => [
     width: 150,
     visible: true,
     pinned: false,
+    filterable: false,
   },
   {
     key: 'inventoryItemIsFeatured',
@@ -387,6 +457,7 @@ const getDefaultColumns = () => [
     width: 120,
     visible: true,
     pinned: false,
+    filterable: false,
   },
   {
     key: 'inventoryItemIsOnSale',
@@ -396,6 +467,7 @@ const getDefaultColumns = () => [
     width: 100,
     visible: true,
     pinned: false,
+    filterable: false,
   },
 ]
 
@@ -497,6 +569,7 @@ function openModal() {
 }
 
 async function loadData() {
+  isLoading.value = true
   try {
     // Xây dựng filter
     const filters = []
@@ -527,6 +600,8 @@ async function loadData() {
   } catch (error) {
     console.error('Failed to load data:', error)
     showToast('Không thể tải dữ liệu', 'error')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -555,6 +630,14 @@ const tableData = computed(() => {
     ...item,
     inventoryItemCourse: CourseText[item.inventoryItemCourse] || '',
   }))
+})
+
+const activeFilterKeys = computed(() => {
+  return appliedFilters.value.map((f) => f.key)
+})
+
+const currentQuickFilterData = computed(() => {
+  return appliedFilters.value.find((f) => f.key === currentQuickFilterColumn.value?.key)
 })
 
 function editItem(itemFromRow) {
@@ -627,6 +710,33 @@ function handleFilterApply(filters) {
   // console.log('Filters received:', filters) // Bỏ comment để debug nếu cần
   appliedFilters.value = filters
   currentPage.value = 1
+  loadData()
+}
+
+function handleHeaderClick(header, event) {
+  const targetRect = event.currentTarget.getBoundingClientRect()
+  currentQuickFilterColumn.value = header
+  quickFilterPosition.value = {
+    top: `${targetRect.bottom}px`,
+    left: `${targetRect.left}px`,
+  }
+  isQuickFilterVisible.value = true
+}
+
+function handleQuickFilterApply(newFilter) {
+  const index = appliedFilters.value.findIndex((f) => f.key === newFilter.key)
+  if (index > -1) {
+    // Cập nhật bộ lọc hiện có
+    appliedFilters.value[index] = newFilter
+  } else {
+    // Thêm bộ lọc mới
+    appliedFilters.value.push(newFilter)
+  }
+  loadData()
+}
+
+function handleQuickFilterReset(filterKey) {
+  appliedFilters.value = appliedFilters.value.filter((f) => f.key !== filterKey)
   loadData()
 }
 

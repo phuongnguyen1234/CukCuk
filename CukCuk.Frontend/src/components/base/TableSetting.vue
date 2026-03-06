@@ -11,7 +11,7 @@
                 <Checkbox v-model="areAllVisible" />
               </th>
               <th style="text-align: left">Tên cột</th>
-              <th style="width: 150px; text-align: left">Độ rộng cột</th>
+              <th style="width: 150px; text-align: right">Độ rộng cột</th>
               <th style="width: 100px; text-align: center">Chức năng</th>
             </tr>
           </thead>
@@ -29,7 +29,12 @@
                 </td>
                 <td>{{ column.label }}</td>
                 <td>
-                  <Input v-model="column.width" :rules="['number']" placeholder="Tự động" />
+                  <Input
+                    v-model="column.width"
+                    :rules="['number']"
+                    placeholder="Tự động"
+                    style="text-align: right"
+                  />
                 </td>
                 <td class="actions-cell">
                   <ButtonIcon
@@ -215,7 +220,7 @@ function resetToDefault() {
   flex-grow: 1;
   overflow: auto; /* Cho phép table scroll nếu nội dung dài */
   border: 1px solid #e9eaeb;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .custom-settings-table {
@@ -227,7 +232,7 @@ function resetToDefault() {
   position: sticky;
   top: 0;
   background-color: #fafafa;
-  z-index: 2;
+  z-index: var(--z-index-table-header);
   height: 36px;
   padding: 0 12px;
   text-align: left;

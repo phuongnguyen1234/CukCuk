@@ -3,6 +3,10 @@ import { onMounted, computed, ref, watch, nextTick } from 'vue'
 import BaseSelect from './BaseSelect.vue'
 
 const props = defineProps({
+  width: {
+    type: [String, Number],
+    default: null,
+  },
   modelValue: [String, Number],
   required: Boolean,
   error: Boolean,
@@ -34,9 +38,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  direction: {
+    type: String,
+    default: 'bottom',
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change', 'add'])
+
+const componentStyle = computed(() => {
+  if (!props.width) return {}
+  return { width: typeof props.width === 'number' ? `${props.width}px` : props.width }
+})
 
 const baseSelectRef = ref(null)
 const inputRef = ref(null)
@@ -137,6 +150,8 @@ const handleClose = () => {
 <template>
   <BaseSelect
     ref="baseSelectRef"
+    :style="componentStyle"
+    :direction="direction"
     :error="error"
     :disabled="disabled"
     :required="required"
@@ -185,7 +200,7 @@ const handleClose = () => {
 <style scoped>
 .select-input-field {
   width: 100%;
-  height: 34px; /* Match parent height minus border */
+  height: 32px;
   border: none;
   outline: none;
   padding: 0 12px;

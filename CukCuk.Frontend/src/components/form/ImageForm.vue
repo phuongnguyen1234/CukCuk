@@ -12,18 +12,7 @@
     <div class="image-preview">
       <img v-if="imageUrl" :src="imageUrl" alt="Ảnh món" class="preview-img" />
       <div v-else class="image-placeholder">
-        <svg
-          width="40"
-          height="40"
-          viewBox="0 0 40 40"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M33.3333 5H6.66667C5.74167 5 5 5.74167 5 6.66667V33.3333C5 34.2583 5.74167 35 6.66667 35H33.3333C34.2583 35 35 34.2583 35 33.3333V6.66667C35 5.74167 34.2583 5 33.3333 5ZM33.3333 33.3333H6.66667V6.66667H33.3333V33.3333ZM11.6667 25L16.6667 18.3333L20 22.5L25 15L31.6667 25H11.6667Z"
-            fill="#9AA0AC"
-          />
-        </svg>
+        <img :src="ImgPlaceholder" alt="placeholder" height="90" width="79" />
       </div>
     </div>
 
@@ -56,7 +45,7 @@
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d="M8 1V11M8 1L4.5 4.5M8 1L11.5 4.5M1 15H15"
+              d="M2.6665 11.3333V12.6667C2.6665 13.0203 2.80698 13.3594 3.05703 13.6095C3.30708 13.8595 3.64622 14 3.99984 14H11.9998C12.3535 14 12.6926 13.8595 12.9426 13.6095C13.1927 13.3594 13.3332 13.0203 13.3332 12.6667V11.3333M4.6665 5.99999L7.99984 2.66666M7.99984 2.66666L11.3332 5.99999M7.99984 2.66666V10.6667"
               stroke="currentColor"
               stroke-width="1.5"
               stroke-linecap="round"
@@ -90,7 +79,7 @@
       </ButtonIcon>
 
       <ButtonIcon
-        variant="outline"
+        variant="danger-outline"
         title="Xóa ảnh"
         :height="28"
         :width="28"
@@ -123,6 +112,7 @@ import { BASE_URL } from '@/services/axios-client.js'
 import ButtonGroup from '@/components/controls/buttons/ButtonGroup.vue'
 import Button from '@/components/controls/buttons/Button.vue'
 import ButtonIcon from '@/components/controls/buttons/ButtonIcon.vue'
+import ImgPlaceholder from '@/assets/icons/img_placeholder.png'
 
 const props = defineProps({
   modelValue: {

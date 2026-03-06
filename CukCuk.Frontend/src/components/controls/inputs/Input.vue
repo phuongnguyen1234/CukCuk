@@ -70,11 +70,10 @@ function handleInput(event) {
 </template>
 
 <style scoped>
-@import url('../../../assets/styles/variables.css');
-
 .m-input-wrapper {
   position: relative;
   width: 100%;
+  min-width: 100px;
 }
 
 .m-input-icon {

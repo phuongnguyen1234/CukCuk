@@ -5,6 +5,10 @@ const props = defineProps({
   error: Boolean,
   required: Boolean,
   width: String, // Cho phép tùy chỉnh độ rộng của dropdown (VD: '600px')
+  direction: {
+    type: String,
+    default: 'bottom', // 'bottom' | 'top'
+  },
   showAddButton: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
 })
@@ -15,8 +19,12 @@ const isOpen = ref(false)
 const containerRef = ref(null)
 const optionsStyle = ref({})
 
-const toggle = () => {
+const toggle = (event) => {
   if (props.disabled) return
+  // Nếu click vào nút thêm mới (quick-add-btn), không thực hiện toggle
+  // (Sự kiện sẽ bubble lên document để đóng các select khác, nhưng logic đóng select này đã được xử lý ở handleAdd)
+  if (event && event.target.closest('.quick-add-btn')) return
+
   if (isOpen.value) {
     close()
   } else {
@@ -44,13 +52,22 @@ const handleClickOutside = (event) => {
 const updatePosition = () => {
   if (!isOpen.value || !containerRef.value) return
   const rect = containerRef.value.getBoundingClientRect()
-  optionsStyle.value = {
+  const newStyle = {
     position: 'fixed',
-    top: `${rect.bottom}px`,
     left: `${rect.left}px`,
     width: props.width || `${rect.width}px`, // Nếu có width props thì dùng, không thì bằng input
     minWidth: `${rect.width}px`, // Đảm bảo không nhỏ hơn input
   }
+
+  if (props.direction === 'top') {
+    // Vị trí bottom của dropdown cách đáy viewport một khoảng bằng vị trí top của input
+    newStyle.bottom = `${window.innerHeight - rect.top}px`
+    newStyle.top = 'auto'
+  } else {
+    newStyle.top = `${rect.bottom}px`
+    newStyle.bottom = 'auto'
+  }
+  optionsStyle.value = newStyle
 }
 
 onMounted(() => {
@@ -64,6 +81,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', updatePosition, true)
   window.removeEventListener('resize', updatePosition)
 })
+
+const handleAdd = () => {
+  if (props.disabled) return
+  close() // Đóng dropdown trước khi thực hiện hành động thêm
+  emit('add')
+}
 
 defineExpose({ open, close, toggle, isOpen })
 </script>
@@ -82,7 +105,7 @@ defineExpose({ open, close, toggle, isOpen })
         v-if="showAddButton"
         class="quick-add-btn"
         :class="{ 'is-disabled': disabled }"
-        @click.stop="!disabled && $emit('add')"
+        @click="handleAdd"
       >
         <svg
           width="20"
@@ -102,12 +125,31 @@ defineExpose({ open, close, toggle, isOpen })
       </div>
 
       <div class="select-icon" :class="{ 'has-add-btn': showAddButton }">
-        <i class="fi fi-rr-angle-small-down"></i>
+        <svg
+          width="14"
+          height="8"
+          viewBox="0 0 14 8"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M1 1L7 7L13 1"
+            stroke="#717680"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
       </div>
     </div>
 
     <Teleport to="body">
-      <div v-if="isOpen" class="select-options" :style="optionsStyle">
+      <div
+        v-if="isOpen"
+        class="select-options"
+        :class="{ 'opens-up': direction === 'top' }"
+        :style="optionsStyle"
+      >
         <slot name="options" :close="close"></slot>
       </div>
     </Teleport>
@@ -118,24 +160,25 @@ defineExpose({ open, close, toggle, isOpen })
 .custom-select {
   position: relative;
   width: 100%;
+  min-width: 100px;
 }
 .select-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 36px;
-  border: 1px solid #e0e6ec;
-  border-radius: 4px;
+  min-height: 32px;
+  border: 1px solid var(--border-control-normal);
+  border-radius: 8px;
   background-color: #fff;
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
 .select-input-wrapper:not(.is-disabled):hover {
-  border-color: #2680eb;
+  border-color: var(--border-control-hover);
 }
 .select-input-wrapper.is-active {
-  border-color: #2680eb;
+  border-color: var(--border-control-hover);
 }
 .select-input-wrapper.input--error {
   border-color: #e61d1d;
@@ -165,8 +208,13 @@ defineExpose({ open, close, toggle, isOpen })
   margin-top: 4px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 150;
+  z-index: var(--z-index-dropdown);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.select-options.opens-up {
+  /* Khi mở lên trên, margin ở dưới */
+  margin-top: 0;
+  margin-bottom: 4px;
 }
 
 .quick-add-btn {
@@ -182,8 +230,8 @@ defineExpose({ open, close, toggle, isOpen })
   cursor: pointer;
   color: #666;
   background-color: #fff;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
   z-index: 2;
 }
 .select-input-wrapper:not(.is-disabled) .quick-add-btn:hover {
