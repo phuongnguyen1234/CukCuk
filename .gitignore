@@ -7,7 +7,7 @@ bin
 CukCuk.Backend/CukCuk.Backend.Api/obj/
 CukCuk.Backend/CukCuk.Backend.Core/obj/
 CukCuk.Backend/CukCuk.Backend.Infrastructure/obj/
-CukCuk.Backend/CukCuk.Backend.Api/wwwroot/uploads/
+#CukCuk.Backend/CukCuk.Backend.Api/wwwroot/uploads/
 CukCuk.Backend/.vs/
 
 # Env
