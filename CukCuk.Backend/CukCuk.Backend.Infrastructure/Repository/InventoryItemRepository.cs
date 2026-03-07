@@ -12,6 +12,7 @@ namespace CukCuk.Backend.Infrastructure.Repository
     using Dapper;
     using System.Data;
     using System.Data.Common;
+    using CukCuk.Backend.Infrastructure.Extensions;
 
     /// <summary>
     /// Repo của InventoryItem
@@ -65,30 +66,62 @@ namespace CukCuk.Backend.Infrastructure.Repository
                     var values = f.Value?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
                     if (!values.Any()) continue;
 
+                    // Chuẩn hóa tên cột về snake_case để đảm bảo khớp với tên cột trong DB (kể cả khi FE gửi camelCase)
+                    var columnSnakeCase = f.Column.ToSnakeCase();
+
                     // Ánh xạ tên cột filter sang cột trong bảng tương ứng (xử lý Alias)
                     string colSql;
-                    if (f.Column.Equals("inventory_item_category_name", StringComparison.OrdinalIgnoreCase))
+                    if (columnSnakeCase.Equals("inventory_item_category_name", StringComparison.OrdinalIgnoreCase))
                     {
                         colSql = "c.`inventory_item_category_name`";
                     }
-                    else if (f.Column.Equals("unit_name", StringComparison.OrdinalIgnoreCase))
+                    else if (columnSnakeCase.Equals("unit_name", StringComparison.OrdinalIgnoreCase))
                     {
                         colSql = "u.`unit_name`";
                     }
-                    else if (f.Column.Equals("inventory_item_type_name", StringComparison.OrdinalIgnoreCase))
+                    else if (columnSnakeCase.Equals("inventory_item_type_name", StringComparison.OrdinalIgnoreCase))
                     {
                         colSql = "t.`inventory_item_type_name`";
                     }
                     else
                     {
-                        colSql = $"i.`{f.Column}`"; // Mặc định là bảng chính
+                        colSql = $"i.`{columnSnakeCase}`"; // Mặc định là bảng chính
                     }
 
                     // Xử lý đặc biệt cho các cột boolean
-                    bool isBooleanColumn = f.Column.StartsWith("is_") || f.Column.Contains("_is_");
-                    if (isBooleanColumn && f.Operation == FilterOperation.Equals)
+                    var isBooleanColumn = columnSnakeCase.StartsWith("is_") || columnSnakeCase.Contains("_is_") || 
+                                          columnSnakeCase.Equals("inventory_item_allow_price_override", StringComparison.OrdinalIgnoreCase);
+                    // Xử lý cho các cột tiền tệ/số để đảm bảo so sánh đúng kiểu dữ liệu (tránh so sánh chuỗi)
+                    var isNumericColumn = columnSnakeCase.Equals("inventory_item_price", StringComparison.OrdinalIgnoreCase) ||
+                                           columnSnakeCase.Equals("inventory_item_cost_price", StringComparison.OrdinalIgnoreCase);
+
+                    var subClauses = new List<string>();
+
+                    if (isNumericColumn)
                     {
-                        var boolClauses = new List<string>();
+                        // Logic dành riêng cho các cột kiểu số (giá, giá vốn)
+                        bool isAndLogic = f.Operation == FilterOperation.NotEqual;
+
+                        for (int j = 0; j < values.Length; j++)
+                        {
+                            var paramName = $"p{i}_{j}";
+                            var val = values[j];
+                            // Sử dụng InvariantCulture để đảm bảo parse đúng số bất kể locale của server
+                            if (decimal.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var decimalVal))
+                            {
+                                subClauses.Add($"{colSql} {GetSqlOperator(f.Operation)} @{paramName}");
+                                parameters.Add(paramName, decimalVal, DbType.Decimal);
+                            }
+                        }
+                        if (subClauses.Any())
+                        {
+                            var joinOperator = isAndLogic ? " AND " : " OR ";
+                            whereClauses.Add($"({string.Join(joinOperator, subClauses)})");
+                        }
+                    }
+                    else if (isBooleanColumn && f.Operation == FilterOperation.Equals)
+                    {
+                        // Logic dành riêng cho các cột boolean
                         for (int j = 0; j < values.Length; j++)
                         {
                             var paramName = $"p{i}_{j}";
@@ -107,18 +140,16 @@ namespace CukCuk.Backend.Infrastructure.Repository
                             if (dbVal != null)
                             {
                                 parameters.Add(paramName, dbVal);
-                                boolClauses.Add($"{colSql} = @{paramName}");
+                                subClauses.Add($"{colSql} = @{paramName}");
                             }
                         }
-                        if (boolClauses.Any())
+                        if (subClauses.Any())
                         {
-                            // Với nhiều giá trị boolean (ít xảy ra), dùng OR
-                            whereClauses.Add($"({string.Join(" OR ", boolClauses)})");
+                            whereClauses.Add($"({string.Join(" OR ", subClauses)})");
                         }
                     }
-                    else // Xử lý cho các kiểu dữ liệu khác (string, number)
+                    else // Mặc định xử lý như kiểu chuỗi cho các cột còn lại
                     {
-                        var subClauses = new List<string>();
                         // Với phép phủ định (Khác, Không chứa), ta dùng AND (VD: Khác A AND Khác B)
                         // Với phép khẳng định (Bằng, Chứa...), ta dùng OR (VD: Bằng A OR Bằng B)
                         bool isAndLogic = f.Operation == FilterOperation.NotContains || f.Operation == FilterOperation.NotEqual;
@@ -132,32 +163,33 @@ namespace CukCuk.Backend.Infrastructure.Repository
                             {
                                 case FilterOperation.Contains:
                                     subClauses.Add($"{colSql} LIKE @{paramName}");
-                                    parameters.Add(paramName, $"%{val}%");
+                                    parameters.Add(paramName, $"%{val}%", DbType.String);
                                     break;
                                 case FilterOperation.NotContains:
                                     subClauses.Add($"{colSql} NOT LIKE @{paramName}");
-                                    parameters.Add(paramName, $"%{val}%");
+                                    parameters.Add(paramName, $"%{val}%", DbType.String);
                                     break;
                                 case FilterOperation.StartsWith:
                                     subClauses.Add($"{colSql} LIKE @{paramName}");
-                                    parameters.Add(paramName, $"{val}%");
+                                    parameters.Add(paramName, $"{val}%", DbType.String);
                                     break;
                                 case FilterOperation.EndsWith:
                                     subClauses.Add($"{colSql} LIKE @{paramName}");
-                                    parameters.Add(paramName, $"%{val}");
+                                    parameters.Add(paramName, $"%{val}", DbType.String);
                                     break;
                                 case FilterOperation.Equals:
                                     subClauses.Add($"{colSql} = @{paramName}");
-                                    parameters.Add(paramName, val);
+                                    parameters.Add(paramName, val, DbType.String);
                                     break;
                                 case FilterOperation.NotEqual:
                                     subClauses.Add($"{colSql} <> @{paramName}");
-                                    parameters.Add(paramName, val);
+                                    parameters.Add(paramName, val, DbType.String);
                                     break;
-                                // Các trường hợp còn lại cho number
                                 default:
+                                    // Trường hợp này không nên xảy ra với cột chuỗi (ví dụ: > , <)
+                                    // nhưng nếu có, nó sẽ được coi là so sánh chuỗi.
                                     subClauses.Add($"{colSql} {GetSqlOperator(f.Operation)} @{paramName}");
-                                    parameters.Add(paramName, val);
+                                    parameters.Add(paramName, val, DbType.String);
                                     break;
                             }
                         }

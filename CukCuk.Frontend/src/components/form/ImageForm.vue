@@ -113,6 +113,7 @@ import ButtonGroup from '@/components/controls/buttons/ButtonGroup.vue'
 import Button from '@/components/controls/buttons/Button.vue'
 import ButtonIcon from '@/components/controls/buttons/ButtonIcon.vue'
 import ImgPlaceholder from '@/assets/icons/img_placeholder.png'
+import { useToast } from '@/utils/use-toast'
 
 const props = defineProps({
   modelValue: {
@@ -122,6 +123,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'file-change', 'menu'])
+
+const { showToast } = useToast()
 
 const imageUrl = computed(() => {
   if (!props.modelValue) {
@@ -144,12 +147,27 @@ function triggerUpload() {
 
 function onFileSelected(event) {
   const file = event.target.files[0]
-  if (file) {
-    const blobUrl = URL.createObjectURL(file)
-    emit('update:modelValue', blobUrl)
-    emit('file-change', file)
-    event.target.value = ''
+  if (!file) {
+    return
   }
+
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif']
+  const fileName = file.name.toLowerCase()
+  const fileExtension = fileName.substring(fileName.lastIndexOf('.'))
+
+  if (!allowedExtensions.includes(fileExtension)) {
+    showToast(
+      'Định dạng tệp không hợp lệ. Vui lòng chọn ảnh có định dạng (.jpg, .jpeg, .png, .gif).',
+      'error',
+    )
+    event.target.value = '' // Reset input
+    return
+  }
+
+  const blobUrl = URL.createObjectURL(file)
+  emit('update:modelValue', blobUrl)
+  emit('file-change', file)
+  event.target.value = ''
 }
 
 function deleteImage() {

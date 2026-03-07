@@ -39,10 +39,15 @@ namespace CukCuk.Backend.Core.DTOs
                     "equals" => FilterOperation.Equals,
                     "eq" => FilterOperation.Equals,
                     "neq" => FilterOperation.NotEqual,
+                    "notequal" => FilterOperation.NotEqual,
                     "gt" => FilterOperation.GreaterThan,
+                    "greaterthan" => FilterOperation.GreaterThan,
                     "gte" => FilterOperation.GreaterThanOrEqual,
+                    "greaterthanorequal" => FilterOperation.GreaterThanOrEqual,
                     "lt" => FilterOperation.LessThan,
+                    "lessthan" => FilterOperation.LessThan,
                     "lte" => FilterOperation.LessThanOrEqual,
+                    "lessthanorequal" => FilterOperation.LessThanOrEqual,
                     _ => FilterOperation.Contains
                 };
 

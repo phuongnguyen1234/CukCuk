@@ -532,13 +532,13 @@ function handleColumnSettingsSave(newConfig) {
   columnsConfig.value = newConfig
   localStorage.setItem(COLUMNS_CONFIG_STORAGE_KEY, JSON.stringify(newConfig))
   isTableSettingVisible.value = false
-  showToast('Đã cập nhật cài đặt bảng thành công!')
+  showToast('Đã cập nhật thiết lập bảng thành công!')
 }
 
 function handleColumnSettingsReset() {
   columnsConfig.value = getDefaultColumns()
   localStorage.removeItem(COLUMNS_CONFIG_STORAGE_KEY)
-  showToast('Đã khôi phục cài đặt mặc định!')
+  showToast('Đã khôi phục thiết lập bảng mặc định!')
   isTableSettingVisible.value = false
 }
 
@@ -668,7 +668,7 @@ async function handleSave(updatedItem) {
   // Sau khi lưu thành công, reload lại danh sách
   await loadData()
   isOpen.value = false
-  showToast('Lưu dữ liệu thành công!')
+  showToast('Thêm món thành công!')
 }
 
 async function handleSaveAndAdd(itemJustSaved) {
@@ -681,7 +681,7 @@ async function handleSaveAndAdd(itemJustSaved) {
   newItem.inventoryItemCode = '' // Sẽ kích hoạt sinh mã tự động trong form
 
   selectedItem.value = newItem
-  showToast('Lưu thành công! Sẵn sàng thêm món mới.')
+  showToast('Thêm món thành công! Sẵn sàng thêm món mới.')
 }
 
 function deleteItem(item) {
@@ -699,7 +699,7 @@ async function handleConfirmDelete() {
     await loadData()
   } catch (error) {
     console.error(error)
-    showToast('Xóa thất bại', 'error')
+    showToast('Xóa thất bại (Có thể món đã bị xóa rồi?)', 'error')
   } finally {
     isConfirmModalVisible.value = false
     itemToDelete.value = null

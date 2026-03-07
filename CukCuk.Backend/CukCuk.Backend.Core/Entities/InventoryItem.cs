@@ -78,7 +78,7 @@ namespace CukCuk.Backend.Core.Entities
         /// <summary>
         /// Giá vốn của món (phục vụ tính lợi nhuận).
         /// </summary>
-        public decimal? InventoryItemCostPrice { get; set; }
+        public decimal InventoryItemCostPrice { get; set; }
 
         /// <summary>
         /// Mô tả chi tiết món ăn.

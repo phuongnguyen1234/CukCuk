@@ -124,13 +124,10 @@ namespace CukCuk.Backend.Core.Validators
                 .Must(price => price % 1 == 0)
                 .WithMessage("Giá bán phải là số nguyên.");
 
-            // giá vốn >= 0 nếu có
-            When(x => x.InventoryItemCostPrice.HasValue, () =>
-            {
-                RuleFor(x => x.InventoryItemCostPrice.Value)
-                    .GreaterThanOrEqualTo(0m)
-                    .WithMessage("Giá vốn không được âm.");
-            });
+            // giá vốn >= 0
+            RuleFor(x => x.InventoryItemCostPrice)
+                .GreaterThanOrEqualTo(0m)
+                .WithMessage("Giá vốn không được âm.");
 
             // mô tả không quá 500 ký tự
             RuleFor(x => x.InventoryItemDescription)

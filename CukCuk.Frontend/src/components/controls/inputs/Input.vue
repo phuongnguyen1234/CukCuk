@@ -50,6 +50,40 @@ function handleInput(event) {
     emit('update:modelValue', value)
   }
 }
+
+function handleKeydown(event) {
+  // Nếu không phải là input số hoặc tiền tệ, bỏ qua
+  if (!props.rules.includes('number') && !props.rules.includes('currency')) {
+    return
+  }
+
+  // Cho phép các phím điều khiển, điều hướng, và các phím tắt thông dụng
+  // (Backspace, Tab, Enter, Delete, Pfeile, Home, End, Ctrl+A/C/V/X)
+  if (
+    [
+      'Backspace',
+      'Tab',
+      'Enter',
+      'Escape',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+    ].includes(event.key) ||
+    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    (event.ctrlKey === true && ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase())) ||
+    // Allow: Cmd+A, Cmd+C, Cmd+V, Cmd+X (for Mac)
+    (event.metaKey === true && ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase()))
+  ) {
+    return // Cho phép thực hiện
+  }
+
+  // Chặn tất cả các phím không phải là số
+  if (!/^\d$/.test(event.key)) {
+    event.preventDefault()
+  }
+}
 </script>
 
 <template>
@@ -63,6 +97,7 @@ function handleInput(event) {
       v-bind="$attrs"
       :value="displayValue"
       @input="handleInput"
+      @keydown="handleKeydown"
       class="input_form"
       :class="{ 'input--error': error, 'input--has-icon': icon || $slots.icon }"
     />

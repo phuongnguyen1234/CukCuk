@@ -96,7 +96,7 @@ namespace CukCuk.Backend.Core.DTOs
         /// <summary>
         /// Giá vốn của món.
         /// </summary>
-        public decimal? InventoryItemCostPrice { get; set; }
+        public decimal InventoryItemCostPrice { get; set; }
 
         /// <summary>
         /// Mô tả chi tiết món ăn.

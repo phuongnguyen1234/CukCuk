@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -82,7 +82,7 @@ namespace CukCuk.Backend.Core.DTOs
         /// <summary>
         /// Giá vốn của món (phục vụ tính lợi nhuận).
         /// </summary>
-        public decimal? InventoryItemCostPrice { get; set; }
+        public decimal InventoryItemCostPrice { get; set; }
 
         /// <summary>
         /// Mô tả chi tiết món ăn.

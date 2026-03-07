@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CukCuk.Backend.Core.Services
 {
@@ -33,6 +34,7 @@ namespace CukCuk.Backend.Core.Services
         private readonly IInventoryItemTypeRepository _typeRepository;
         private readonly IFileStorageService _fileStorage;
         private readonly IValidator<InventoryItemRequestDTO> _dtoValidator;
+        private readonly ILogger<InventoryItemService> _logger;
 
         public InventoryItemService(
             IInventoryItemRepository repository,
@@ -41,7 +43,8 @@ namespace CukCuk.Backend.Core.Services
             IKitchenRepository kitchenRepository,
             IInventoryItemTypeRepository typeRepository,
             IFileStorageService fileStorage,
-            IValidator<InventoryItemRequestDTO> dtoValidator)
+            IValidator<InventoryItemRequestDTO> dtoValidator,
+            ILogger<InventoryItemService> logger)
             : base(repository)
         {
             _inventoryRepository = repository;
@@ -51,6 +54,7 @@ namespace CukCuk.Backend.Core.Services
             _typeRepository = typeRepository;
             _fileStorage = fileStorage;
             _dtoValidator = dtoValidator ?? throw new ArgumentNullException(nameof(dtoValidator));
+            _logger = logger;
         }
 
         /// <summary>
@@ -221,9 +225,9 @@ namespace CukCuk.Backend.Core.Services
                     {
                         await _fileStorage.DeleteFileAsync(previousImagePath);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignore
+                        _logger.LogWarning(ex, "Không thể xóa ảnh cũ: {Path}", previousImagePath);
                     }
                 }
 
@@ -284,100 +288,30 @@ namespace CukCuk.Backend.Core.Services
         /// <returns></returns>
         public override async Task<bool> DeleteAsync(Guid id)
         {
+            var existing = await base.GetByIdAsync(id);
+            if (existing is null)
+            {
+                return false; // Không tìm thấy, trả về false
+            }
+
             // Xóa links trước (an toàn nếu có ràng buộc FK)
             await _inventoryRepository.RemoveAllItemAdditionsAsync(id);
             await _inventoryRepository.RemoveAllItemKitchensAsync(id);
 
-            var existing = await base.GetByIdAsync(id);
-            if (existing != null && !string.IsNullOrWhiteSpace(existing.InventoryItemImage))
+            if (!string.IsNullOrWhiteSpace(existing.InventoryItemImage))
             {
                 try
                 {
                     await _fileStorage.DeleteFileAsync(existing.InventoryItemImage);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignore
+                    _logger.LogWarning(ex, "Không thể xóa ảnh khi xóa món {Id}: {Path}", id, existing.InventoryItemImage);
                 }
             }
 
             return await base.DeleteAsync(id);
         }
-
-        // quản lý addition của món
-
-        // /// <summary>
-        // /// Lấy danh sách id sở thích
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <returns></returns>
-        // public async Task<IEnumerable<Guid>> GetAdditionIdsAsync(Guid inventoryItemId)
-        // {
-        //     var existing = await base.GetByIdAsync(inventoryItemId);
-        //     if (existing == null) return Enumerable.Empty<Guid>();
-
-        //     return await _inventoryRepository.GetAdditionIdsForItemAsync(inventoryItemId);
-        // }
-
-        // /// <summary>
-        // /// Thêm danh sách sở thích cho món
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <param name="additionIds"></param>
-        // /// <returns></returns>
-        // /// <exception cref="ArgumentNullException"></exception>
-        // public async Task<bool> AddAdditionsAsync(Guid inventoryItemId, IEnumerable<Guid> additionIds)
-        // {
-        //     if (additionIds == null) throw new ArgumentNullException(nameof(additionIds));
-
-        //     var existing = await base.GetByIdAsync(inventoryItemId);
-        //     if (existing == null) return false;
-
-        //     var ids = additionIds.Where(g => g != Guid.Empty).Distinct().ToArray();
-        //     if (!ids.Any()) return true; // nothing to do
-
-        //     // Optionally: validate each additionId exists (requires addition repo) — skipped for now
-        //     await _inventoryRepository.AddItemAdditionsAsync(inventoryItemId, ids);
-        //     return true;
-        // }
-
-        // /// <summary>
-        // /// Xóa danh sách sở thích của món
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <param name="additionIds"></param>
-        // /// <returns></returns>
-        // /// <exception cref="ArgumentNullException"></exception>
-        // public async Task<bool> RemoveAdditionsAsync(Guid inventoryItemId, IEnumerable<Guid> additionIds)
-        // {
-        //     if (additionIds == null) throw new ArgumentNullException(nameof(additionIds));
-
-        //     var existing = await base.GetByIdAsync(inventoryItemId);
-        //     if (existing == null) return false;
-
-        //     var ids = additionIds.Where(g => g != Guid.Empty).Distinct().ToArray();
-        //     if (!ids.Any()) return true;
-
-        //     await _inventoryRepository.RemoveItemAdditionsAsync(inventoryItemId, ids);
-        //     return true;
-        // }
-
-        // /// <summary>
-        // /// Xóa sở thích của món
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <param name="additionId"></param>
-        // /// <returns></returns>
-        // public async Task<bool> RemoveAdditionAsync(Guid inventoryItemId, Guid additionId)
-        // {
-        //     if (additionId == Guid.Empty) return true;
-
-        //     var existing = await base.GetByIdAsync(inventoryItemId);
-        //     if (existing == null) return false;
-
-        //     await _inventoryRepository.RemoveItemAdditionsAsync(inventoryItemId, new[] { additionId });
-        //     return true;
-        // }
 
         /// <summary>
         /// Tạo code từ name
