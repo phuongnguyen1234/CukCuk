@@ -1,5 +1,9 @@
 <template>
-  <BaseModal :visible="visible" @update:visible="handleClose">
+  <BaseModal
+    :visible="visible"
+    @update:visible="handleClose"
+    info="Thêm nhanh đơn vị tính của món ăn"
+  >
     <template #title>Thêm đơn vị tính</template>
 
     <FormInputSection>
@@ -7,6 +11,7 @@
         <Input
           v-model="unit.unitName"
           placeholder="Nhập tên đơn vị"
+          :error="!!errors.unitName"
           @blur="validateField('unitName')"
         />
       </FormInputRow>
@@ -166,5 +171,10 @@ async function handleSave() {
 
 .textarea-custom::placeholder {
   color: #9ca3af;
+}
+
+/* Nới rộng content để hiển thị bubble validation ở dòng cuối cùng mà không bị cuộn */
+:deep(.form_content) {
+  padding-bottom: 40px;
 }
 </style>

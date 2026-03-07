@@ -22,7 +22,19 @@ namespace CukCuk.Backend.Infrastructure.Repository
             : base(connectionFactory)
         {
         }
-    
+
+        public override async Task<IEnumerable<Unit>> GetAllAsync()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection)
+                await dbConnection.OpenAsync();
+            else
+                connection.Open();
+
+            var table = $"`{TableName}`";
+            var sql = $"SELECT * FROM {table} ORDER BY `unit_name` ASC";
+            return await connection.QueryAsync<Unit>(sql);
+        }
 
     public async Task<bool> ExistsByNameAsync(string unitName, Guid? excludeId = null)
     {

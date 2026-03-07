@@ -13,7 +13,7 @@ import TheHeader from './TheHeader.vue'
 import TheSidebar from './TheSidebar.vue'
 import Toast from '@/components/Toast.vue'
 
-const isSidebarExpanded = ref(false)
+const isSidebarExpanded = ref(true)
 
 const toggleSidebar = () => {
   isSidebarExpanded.value = !isSidebarExpanded.value

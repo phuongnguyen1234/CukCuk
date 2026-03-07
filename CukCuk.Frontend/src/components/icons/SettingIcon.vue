@@ -4,6 +4,7 @@ import BaseIcon from '@/components/base/BaseIcon.vue'
 defineProps({
   size: [Number, String],
   color: String,
+  strokeWidth: [Number, String],
 })
 </script>
 

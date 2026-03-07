@@ -25,7 +25,10 @@
             <template #item="{ element: column }">
               <tr>
                 <td style="text-align: center">
-                  <Checkbox v-model="column.visible" />
+                  <Checkbox
+                    :model-value="column.visible"
+                    @update:model-value="(val) => handleVisibilityChange(column, val)"
+                  />
                 </td>
                 <td>{{ column.label }}</td>
                 <td>
@@ -34,13 +37,14 @@
                     :rules="['number']"
                     placeholder="Tự động"
                     style="text-align: right"
+                    @blur="validateWidth(column)"
                   />
                 </td>
                 <td class="actions-cell">
                   <ButtonIcon
                     variant="text"
                     :title="column.pinned ? 'Bỏ ghim' : 'Ghim cột'"
-                    @click="column.pinned = column.pinned === 'left' ? false : 'left'"
+                    @click="togglePin(column)"
                   >
                     <!-- Pinned Icon -->
                     <svg
@@ -110,6 +114,7 @@ import Button from '@/components/controls/buttons/Button.vue'
 import ButtonGroup from '@/components/controls/buttons/ButtonGroup.vue'
 import ButtonIcon from '@/components/controls/buttons/ButtonIcon.vue'
 import GripIcon from '@/components/icons/GripIcon.vue'
+import { useToast } from '@/utils/use-toast'
 
 const props = defineProps({
   visible: Boolean,
@@ -125,8 +130,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'save', 'reset'])
 
+const { showToast } = useToast()
 const searchQuery = ref('')
 const localColumns = ref([])
+const MAX_PINNED_COLUMNS = 5 // Giới hạn số cột có thể ghim
 
 // Hàm khởi tạo dữ liệu từ props
 function initData() {
@@ -190,11 +197,85 @@ const areAllVisible = computed({
   },
 })
 
+function handleVisibilityChange(column, isVisible) {
+  if (isVisible) {
+    // Nếu đang ẩn -> hiện: Luôn cho phép
+    column.visible = true
+  } else {
+    // Nếu đang hiện -> ẩn: Cần kiểm tra kỹ
+    // Giả lập danh sách cột hiển thị SAU KHI ẩn cột này
+    const visibleColsAfterHide = localColumns.value.filter((c) => c.visible && c.key !== column.key)
+    const pinnedColsAfterHide = visibleColsAfterHide.filter((c) => c.pinned).length
+
+    // Logic: Nếu sau khi ẩn, số cột ghim chiếm TOÀN BỘ số cột hiển thị còn lại -> Chặn
+    if (visibleColsAfterHide.length > 0 && pinnedColsAfterHide >= visibleColsAfterHide.length) {
+      showToast('Không thể ẩn cột này. Cần ít nhất một cột không ghim để hiển thị đúng.', 'warning')
+      return
+    }
+
+    column.visible = false
+  }
+}
+
+function validateWidth(column) {
+  const width = parseInt(column.width, 10)
+  const minWidth = parseInt(column.minWidth, 10)
+
+  // Nếu cột không có minWidth hợp lệ, không thực thi logic này.
+  if (isNaN(minWidth)) {
+    return
+  }
+
+  // Nếu giá trị nhập vào không phải là số (rỗng, chữ...) hoặc nhỏ hơn minWidth,
+  // thì sẽ tự động đặt lại thành minWidth.
+  if (isNaN(width) || width < minWidth) {
+    column.width = minWidth
+    // Chỉ hiện toast khi người dùng cố tình nhập một số nhỏ hơn, không phải khi họ xóa trống.
+    if (!isNaN(width) && width > 0) {
+      showToast(`Độ rộng tối thiểu cho cột "${column.label}" là ${minWidth}px.`, 'warning')
+    }
+  }
+}
+
+function togglePin(column) {
+  if (column.pinned) {
+    column.pinned = false
+  } else {
+    // Đếm số lượng cột đang ghim trên TOÀN BỘ danh sách (bao gồm cả cột ẩn)
+    // để tránh lỗ hổng: ẩn cột đã ghim -> ghim cột mới -> hiện lại cột cũ
+    const totalPinnedCount = localColumns.value.filter((c) => c.pinned).length
+
+    // Kiểm tra 1: Không cho ghim quá giới hạn cứng
+    if (totalPinnedCount >= MAX_PINNED_COLUMNS) {
+      showToast(`Không thể ghim quá ${MAX_PINNED_COLUMNS} cột.`, 'warning')
+      return
+    }
+
+    // Kiểm tra 2: Logic giữ lại ít nhất 1 cột không ghim (chỉ tính trên các cột hiển thị)
+    const visibleCols = localColumns.value.filter((c) => c.visible)
+    const visiblePinnedCount = visibleCols.filter((c) => c.pinned).length
+
+    // Kiểm tra 2: Luôn giữ lại ít nhất một cột không ghim để cuộn (quan trọng khi số cột ít)
+    if (visibleCols.length > 0 && visiblePinnedCount >= visibleCols.length - 1) {
+      showToast(
+        'Không thể ghim tất cả cột. Cần ít nhất một cột không ghim để hiển thị đúng.',
+        'warning',
+      )
+      return
+    }
+    column.pinned = 'left'
+  }
+}
+
 function close() {
   emit('update:visible', false)
 }
 
 function save() {
+  // Duyệt qua tất cả các cột để validate lại độ rộng một lần nữa
+  // Đảm bảo xử lý trường hợp người dùng sửa xong ấn Lưu ngay (chưa kịp blur)
+  localColumns.value.forEach((col) => validateWidth(col))
+
   emit('save', localColumns.value)
   close()
 }

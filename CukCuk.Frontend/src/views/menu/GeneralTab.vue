@@ -16,6 +16,7 @@
           <FormInputRow label="Tên món" required :error="errors.inventoryItemName">
             <Input
               v-model="item.inventoryItemName"
+              :error="!!errors.inventoryItemName"
               @blur="$emit('validate-field', 'inventoryItemName')"
             />
           </FormInputRow>
@@ -24,6 +25,7 @@
           <FormInputRow label="Mã món" required :error="errors.inventoryItemCode">
             <Input
               v-model="item.inventoryItemCode"
+              :error="!!errors.inventoryItemCode"
               @blur="$emit('validate-field', 'inventoryItemCode')"
             />
           </FormInputRow>
@@ -32,6 +34,7 @@
           <FormInputRow label="Tên món theo ngôn ngữ khác" :error="errors.inventoryItemLangName">
             <Input
               v-model="item.inventoryItemLangName"
+              :error="!!errors.inventoryItemLangName"
               @blur="$emit('validate-field', 'inventoryItemLangName')"
             />
           </FormInputRow>
@@ -62,6 +65,7 @@
               option-value="inventoryItemCategoryId"
               placeholder="Chọn nhóm thực đơn"
               searchable="true"
+              :error="!!errors.inventoryItemCategoryId"
               :show-add-button="true"
               @add="$emit('add-new-category')"
             />
@@ -76,6 +80,7 @@
               option-value="unitId"
               placeholder="Chọn đơn vị tính"
               searchable="true"
+              :error="!!errors.unitId"
               :show-add-button="true"
               @add="$emit('add-new-unit')"
               @blur="$emit('validate-field', 'unitId')"
@@ -83,26 +88,18 @@
           </FormInputRow>
 
           <!-- giá bán, thay đổi và điều chỉnh-->
-          <FormInputRow label="Giá bán" required :error="errors.inventoryItemPrice">
-            <div class="row-group">
-              <div style="flex: 1; flex-grow: 0">
-                <Input
-                  v-model="item.inventoryItemPrice"
-                  :rules="['currency']"
-                  type="text"
-                  placeholder="0"
-                  style="text-align: right; width: 204px"
-                  @blur="$emit('validate-field', 'inventoryItemPrice')"
-                />
-              </div>
-
-              <Checkbox v-model="item.inventoryItemIsMarketPrice" label="Thay đổi theo thời giá" />
-
-              <Checkbox
-                v-model="item.inventoryItemAllowPriceOverride"
-                label="Điều chỉnh giá tự do"
-              />
-            </div>
+          <FormInputRow label="Giá bán" required :error="errors.inventoryItemPrice" fit-content>
+            <Input
+              v-model="item.inventoryItemPrice"
+              :rules="['currency']"
+              type="text"
+              placeholder="0"
+              style="text-align: right; width: 204px"
+              :error="!!errors.inventoryItemPrice"
+              @blur="$emit('validate-field', 'inventoryItemPrice')"
+            />
+            <Checkbox v-model="item.inventoryItemIsMarketPrice" label="Thay đổi theo thời giá" />
+            <Checkbox v-model="item.inventoryItemAllowPriceOverride" label="Điều chỉnh giá tự do" />
           </FormInputRow>
 
           <!-- giá vốn-->
@@ -296,14 +293,15 @@ watch(
       clearTimeout(codeGenerationTimeout)
     }
 
-    codeGenerationTimeout = setTimeout(async () => {
-      // Xác định chế độ sửa dựa trên việc có ID hay không
-      const isEditMode = !!item.value.inventoryItemId
-      // Nếu là thêm mới: luôn sinh mã (ghi đè)
-      // Nếu là sửa: chỉ sinh mã khi mã đang trống
-      const shouldGenerate = !isEditMode || !item.value.inventoryItemCode
+    // Xác định chế độ sửa dựa trên việc có ID hay không
+    const isEditMode = !!item.value.inventoryItemId
+    // Nếu là sửa VÀ mã món đã có dữ liệu -> Không làm gì cả (giữ nguyên mã cũ)
+    if (isEditMode && item.value.inventoryItemCode) {
+      return
+    }
 
-      if (newName && shouldGenerate) {
+    codeGenerationTimeout = setTimeout(async () => {
+      if (newName) {
         try {
           const generatedCode = await inventoryItemService.generateCode(newName)
           item.value.inventoryItemCode = generatedCode
@@ -311,7 +309,7 @@ watch(
           console.error('Failed to generate item code:', error)
         }
       }
-    }, 3000) // Đợi 3 giây
+    }, 800) // Giảm xuống 800ms cho phản hồi mượt mà hơn
   },
 )
 
@@ -366,9 +364,7 @@ function onFileChange(file) {
 .row-group {
   display: flex;
   gap: 16px;
-  width: 100%;
   align-items: center;
-  flex-grow: 1;
 }
 
 .description-wrapper {
@@ -384,6 +380,8 @@ function onFileChange(file) {
   padding: 8px 12px;
   font-family: inherit;
   max-height: 200px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Style đặc biệt cho nút AI */
@@ -416,6 +414,25 @@ function onFileChange(file) {
   width: 100%;
   align-items: center;
 }
-</style>
 
-.row-group > div { flex-grow: 0; }
+/* Sửa lỗi: Đưa CSS này vào trong thẻ style */
+.row-group > div {
+  flex-grow: 0;
+}
+
+/* --- Responsive --- */
+/* Dành cho các màn hình nhỏ hơn, ví dụ tablet chiều dọc hoặc cửa sổ hẹp */
+@media (max-width: 1200px) {
+  .basic-info-layout {
+    padding-left: 0; /* Bỏ padding cố định */
+    display: flex; /* Chuyển sang flex để dễ căn chỉnh */
+    flex-direction: column; /* Xếp chồng ảnh và input theo chiều dọc */
+    align-items: center; /* Căn giữa ảnh */
+    gap: 24px; /* Khoảng cách giữa ảnh và form input */
+  }
+
+  .basic-info-image {
+    position: static; /* Reset lại position để ảnh nằm trong flow bình thường */
+  }
+}
+</style>

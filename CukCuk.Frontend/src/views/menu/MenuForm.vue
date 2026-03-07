@@ -66,8 +66,11 @@
       confirm-button-text="Cất"
       cancel-button-text="Không cất"
       confirm-button-variant="primary"
-      @confirm="saveDraftAndClose"
-      @cancel="discardChangesAndClose"
+      :message="cancelConfirmConfig.message"
+      :confirm-button-text="cancelConfirmConfig.confirmButtonText"
+      :cancel-button-text="cancelConfirmConfig.cancelButtonText"
+      @confirm="cancelConfirmConfig.confirmHandler"
+      @cancel="cancelConfirmConfig.cancelHandler"
     />
   </ThePageContainer>
 </template>
@@ -118,6 +121,13 @@ const errors = ref({})
 const initialItemState = ref(null) // For change detection on cancel
 const isCancelConfirmVisible = ref(false)
 const isAddCategoryModalVisible = ref(false)
+const cancelConfirmConfig = ref({
+  message: '',
+  confirmButtonText: '',
+  cancelButtonText: '',
+  confirmHandler: () => {},
+  cancelHandler: () => {},
+})
 const isAddUnitModalVisible = ref(false)
 const isAddAdditionModalVisible = ref(false)
 const isLoading = ref(false)
@@ -229,6 +239,7 @@ watch(
           // Map the array of kitchen objects to an array of IDs for the v-model
           data.kitchenIds = data.kitchens?.map((k) => k.kitchenId) || []
           item.value = data
+          initialItemState.value = JSON.parse(JSON.stringify(data))
         })
         .catch((err) => {
           // Nếu có lỗi, đóng form và báo lỗi
@@ -283,9 +294,10 @@ function preparePayload() {
 }
 
 const validationSchema = yup.object({
-  inventoryItemName: yup.string().required('Tên món không được bỏ trống'),
+  inventoryItemName: yup.string().trim().required('Tên món không được bỏ trống'),
   inventoryItemCode: yup
     .string()
+    .trim()
     .required('Mã món không được bỏ trống')
     .max(255, 'Mã món không được vượt quá 255 ký tự'),
   unitId: yup.string().required('Đơn vị tính không được bỏ trống'),
@@ -378,35 +390,47 @@ watch(
 )
 
 function hasChanges() {
-  if (isEditMode.value || !initialItemState.value) return false
+  if (!initialItemState.value) return false // Guard against null initial state
 
   // Create copies to avoid modifying original objects
   const current = { ...item.value }
   const initial = { ...initialItemState.value }
 
-  // Remove properties that shouldn't be compared
-  delete current.imageFile
-  delete initial.imageFile
-
   // Check if a new image was added
   const imageAdded = !!item.value.imageFile
+
+  // Remove properties that are not part of the data model or are handled separately
+  delete current.imageFile
+  delete initial.imageFile
 
   return JSON.stringify(current) !== JSON.stringify(initial) || imageAdded
 }
 
 function handleCancel() {
-  // In edit mode, just close
-  if (isEditMode.value) {
-    emit('close')
-    return
-  }
-
-  // In add mode, check for changes
   if (hasChanges()) {
-    isCancelConfirmVisible.value = true
+    if (isEditMode.value) {
+      // Configure for EDIT mode
+      cancelConfirmConfig.value = {
+        message: 'Dữ liệu đã được thay đổi. Bạn có muốn lưu các thay đổi không?',
+        confirmButtonText: 'Lưu',
+        cancelButtonText: 'Không lưu',
+        confirmHandler: onSave, // onSave will handle saving and the parent will close
+        cancelHandler: discardChangesAndClose, // Just close without saving
+      }
+    } else {
+      // Configure for ADD mode (saving a draft)
+      cancelConfirmConfig.value = {
+        message: 'Dữ liệu đã thay đổi. Bạn có muốn cất không?',
+        confirmButtonText: 'Cất',
+        cancelButtonText: 'Không cất',
+        confirmHandler: saveDraftAndClose,
+        cancelHandler: discardChangesAndClose,
+      }
+    }
+    isCancelConfirmVisible.value = true // Show the modal
   } else {
     // No changes, just close
-    emit('close')
+    discardChangesAndClose()
   }
 }
 

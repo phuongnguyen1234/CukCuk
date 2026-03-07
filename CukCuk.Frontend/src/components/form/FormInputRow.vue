@@ -21,23 +21,29 @@
       </div>
     </div>
     <div class="form-input-wrapper">
-      <template v-if="$slots.default">
-        <component
-          v-for="(vnode, i) in $slots.default()"
-          :key="i"
-          :is="isVNode(vnode) ? cloneVNode(vnode, { required: required, error: !!error }) : vnode"
-        />
-      </template>
-      <div v-if="error" class="form-error-msg">
-        {{ error }}
+      <!-- 
+        Logic này sẽ lấy phần tử đầu tiên trong slot làm "control chính"
+        và bọc nó trong một container `relative` để định vị thông báo lỗi.
+        Các phần tử còn lại trong slot sẽ được render như bình thường.
+        Điều này cho phép căn giữa thông báo lỗi với control chính (Input/Select)
+        ngay cả khi có các control phụ (Checkbox) đi kèm.
+      -->
+      <div
+        v-if="$slots.default"
+        class="main-control-container"
+        :class="{ 'is-full-width': $slots.default().length === 1 }"
+      >
+        <component :is="$slots.default()[0]" />
+        <div v-if="error" class="form-error-msg">
+          {{ error }}
+        </div>
       </div>
+      <component v-for="vnode in $slots.default?.().slice(1)" :is="vnode" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { cloneVNode, isVNode } from 'vue'
-
 defineProps({
   label: {
     type: String,
@@ -62,6 +68,10 @@ defineProps({
   error: {
     type: String,
     default: '',
+  },
+  fitContent: {
+    type: Boolean,
+    default: false,
   },
 })
 </script>
@@ -95,12 +105,22 @@ defineProps({
 }
 
 .form-input-wrapper {
-  flex: 1;
+  flex: v-bind("fitContent ? '0 0 auto' : '1'");
   display: flex;
   align-items: center;
   gap: 8px;
   height: 100%;
   position: relative;
+}
+
+.main-control-container {
+  position: relative;
+  /* Cho phép co lại để vừa với nội dung (quan trọng cho fit-content) */
+  display: inline-block;
+}
+
+.main-control-container.is-full-width {
+  width: 100%;
 }
 
 .form-error-msg {

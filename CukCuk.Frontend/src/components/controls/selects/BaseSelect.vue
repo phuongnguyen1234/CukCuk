@@ -71,13 +71,13 @@ const updatePosition = () => {
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
+  document.addEventListener('click', handleClickOutside, true)
   // Lắng nghe sự kiện scroll và resize để cập nhật lại vị trí dropdown nếu cần
   window.addEventListener('scroll', updatePosition, true)
   window.addEventListener('resize', updatePosition)
 })
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('click', handleClickOutside, true)
   window.removeEventListener('scroll', updatePosition, true)
   window.removeEventListener('resize', updatePosition)
 })

@@ -471,18 +471,6 @@
           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
           <g id="SVGRepo_iconCarrier">
-            <metadata>
-              <sfw xmlns="&amp;ns_sfw;">
-                <slices></slices>
-                <slicesourcebounds
-                  width="505"
-                  height="984"
-                  bottomleftorigin="true"
-                  x="0"
-                  y="-120"
-                ></slicesourcebounds>
-              </sfw>
-            </metadata>
             <g>
               <g>
                 <g>

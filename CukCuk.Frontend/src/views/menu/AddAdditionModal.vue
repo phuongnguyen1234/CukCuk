@@ -12,6 +12,7 @@
         <Input
           v-model="addition.inventoryItemAdditionName"
           placeholder="Nhập tên sở thích phục vụ"
+          :error="!!errors.inventoryItemAdditionName"
           @blur="validateField('inventoryItemAdditionName')"
         />
       </FormInputRow>
@@ -20,6 +21,7 @@
           v-model="addition.inventoryItemAdditionPrice"
           placeholder="0"
           :rules="['currency']"
+          :error="!!errors.inventoryItemAdditionPrice"
           style="text-align: right"
           @blur="validateField('inventoryItemAdditionPrice')"
         />
@@ -145,3 +147,10 @@ async function handleSave() {
   }
 }
 </script>
+
+<style scoped>
+/* Nới rộng content để hiển thị bubble validation ở dòng cuối cùng mà không bị cuộn */
+:deep(.form_content) {
+  padding-bottom: 40px;
+}
+</style>

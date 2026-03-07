@@ -108,7 +108,7 @@ const modalStyle = computed(() => {
 
 <style scoped>
 .info-icon {
-  cursor: help;
+  cursor: pointer;
 }
 
 .modal {
@@ -124,7 +124,7 @@ const modalStyle = computed(() => {
   background-color: #fff;
   height: fit-content;
   max-height: 90vh;
-  width: 450px;
+  width: 500px;
   min-width: 200px;
   position: absolute;
   top: 50%;

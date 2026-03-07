@@ -67,6 +67,7 @@
               placeholder="Chọn sở thích phục vụ"
               dropdown-width="450px"
               :show-add-button="true"
+              :searchable="true"
               @add="$emit('add-new-addition')"
               @change="(item) => onAdditionChange(item, index)"
             />
@@ -253,14 +254,20 @@ function onAdditionChange(selectedItem, index) {
 
 .info-box {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Căn icon lên trên cùng nếu text bị xuống dòng */
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.info-icon {
+  margin-top: 2px; /* Căn chỉnh icon khớp với dòng text đầu tiên */
+  flex-shrink: 0; /* Đảm bảo icon không bị co lại */
 }
 
 .info-text {
   font-size: 13px;
   color: #2e90fa;
+  line-height: 20px; /* Tăng khoảng cách dòng để dễ đọc hơn trên màn hình nhỏ */
 }
 
 .table-container {
@@ -278,7 +285,8 @@ function onAdditionChange(selectedItem, index) {
 }
 
 .search_box {
-  width: 300px;
+  width: 100%;
+  max-width: 300px; /* Linh hoạt độ rộng, không cứng nhắc 300px */
 }
 
 .add-btn-container {

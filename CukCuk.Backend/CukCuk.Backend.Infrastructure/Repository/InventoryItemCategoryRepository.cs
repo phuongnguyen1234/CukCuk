@@ -23,6 +23,19 @@ namespace CukCuk.Backend.Infrastructure.Repository
         {
         }
 
+        public override async Task<IEnumerable<InventoryItemCategory>> GetAllAsync()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection)
+                await dbConnection.OpenAsync();
+            else
+                connection.Open();
+
+            var table = $"`{TableName}`";
+            var sql = $"SELECT * FROM {table} ORDER BY `inventory_item_category_name` ASC";
+            return await connection.QueryAsync<InventoryItemCategory>(sql);
+        }
+
         /// <summary>
         /// Kiểm tra tồn tại của mã nhóm
         /// </summary>

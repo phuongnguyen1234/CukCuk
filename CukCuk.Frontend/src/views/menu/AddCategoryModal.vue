@@ -12,6 +12,7 @@
         <Input
           v-model="category.inventoryItemCategoryCode"
           placeholder="Nhập mã nhóm"
+          :error="!!errors.inventoryItemCategoryCode"
           @blur="validateField('inventoryItemCategoryCode')"
         />
       </FormInputRow>
@@ -24,6 +25,7 @@
         <Input
           v-model="category.inventoryItemCategoryName"
           placeholder="Nhập tên nhóm"
+          :error="!!errors.inventoryItemCategoryName"
           @blur="validateField('inventoryItemCategoryName')"
         />
       </FormInputRow>
@@ -146,3 +148,10 @@ async function handleSave() {
   }
 }
 </script>
+
+<style scoped>
+/* Nới rộng content để hiển thị bubble validation ở dòng cuối cùng mà không bị cuộn */
+:deep(.form_content) {
+  padding-bottom: 40px;
+}
+</style>

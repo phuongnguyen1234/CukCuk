@@ -365,6 +365,7 @@ const getDefaultColumns = () => [
     type: 'text',
     align: 'left',
     width: 120,
+    minWidth: 70,
     visible: true,
     pinned: false,
     filterable: true,
@@ -375,6 +376,7 @@ const getDefaultColumns = () => [
     type: 'text',
     align: 'left',
     width: 100,
+    minWidth: 100,
     visible: true,
     pinned: false,
     filterable: true,
@@ -385,6 +387,7 @@ const getDefaultColumns = () => [
     type: 'text',
     align: 'left',
     width: 200,
+    minWidth: 160,
     visible: true,
     pinned: false,
     filterable: true,
@@ -395,6 +398,7 @@ const getDefaultColumns = () => [
     type: 'text',
     align: 'left',
     width: 150,
+    minWidth: 120,
     visible: true,
     pinned: false,
     filterable: true,
@@ -405,6 +409,7 @@ const getDefaultColumns = () => [
     type: 'text',
     align: 'left',
     width: 100,
+    minWidth: 60,
     visible: true,
     pinned: false,
     filterable: false,
@@ -415,6 +420,7 @@ const getDefaultColumns = () => [
     type: 'currency',
     align: 'right',
     width: 120,
+    minWidth: 60,
     visible: true,
     pinned: false,
     filterable: false,
@@ -425,6 +431,7 @@ const getDefaultColumns = () => [
     type: 'currency',
     align: 'right',
     width: 120,
+    minWidth: 60,
     visible: true,
     pinned: false,
     filterable: false,
@@ -435,6 +442,7 @@ const getDefaultColumns = () => [
     type: 'boolean',
     align: 'center',
     width: 170,
+    minWidth: 120,
     visible: true,
     pinned: false,
     filterable: false,
@@ -445,6 +453,7 @@ const getDefaultColumns = () => [
     type: 'boolean',
     align: 'center',
     width: 150,
+    minWidth: 120,
     visible: true,
     pinned: false,
     filterable: false,
@@ -455,6 +464,7 @@ const getDefaultColumns = () => [
     type: 'boolean',
     align: 'center',
     width: 120,
+    minWidth: 90,
     visible: true,
     pinned: false,
     filterable: false,
@@ -465,6 +475,7 @@ const getDefaultColumns = () => [
     type: 'boolean',
     align: 'center',
     width: 100,
+    minWidth: 60,
     visible: true,
     pinned: false,
     filterable: false,
@@ -486,6 +497,13 @@ const loadColumnsConfig = () => {
         // Nếu có cột đã lưu, hợp nhất các thuộc tính đã lưu vào cột mặc định
         return savedCol ? { ...defaultCol, ...savedCol } : defaultCol
       })
+
+      // Sanitize: Đảm bảo không phải tất cả các cột hiển thị đều được ghim
+      const visibleCols = finalConfig.filter((c) => c.visible)
+      if (visibleCols.length > 0 && visibleCols.every((c) => c.pinned)) {
+        visibleCols[visibleCols.length - 1].pinned = false
+      }
+
       return finalConfig
     } catch (e) {
       console.error('Không thể phân tích cài đặt cột, sử dụng cài đặt mặc định.', e)
@@ -529,6 +547,13 @@ const visibleTableHeaders = computed(() => {
 })
 
 function handleColumnSettingsSave(newConfig) {
+  // Sanitize: Trước khi lưu, kiểm tra nếu tất cả cột hiển thị đều ghim thì bỏ ghim cột cuối
+  const visibleCols = newConfig.filter((c) => c.visible)
+  if (visibleCols.length > 0 && visibleCols.every((c) => c.pinned)) {
+    visibleCols[visibleCols.length - 1].pinned = false
+    showToast('Đã tự động bỏ ghim cột cuối cùng để đảm bảo hiển thị.', 'warning')
+  }
+
   columnsConfig.value = newConfig
   localStorage.setItem(COLUMNS_CONFIG_STORAGE_KEY, JSON.stringify(newConfig))
   isTableSettingVisible.value = false
