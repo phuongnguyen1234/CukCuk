@@ -51,7 +51,7 @@ namespace CukCuk.Backend.Core.Middlewares
             catch (Exception ex)
             {
                 // nếu lỗi chung chung của server thì ném lỗi 500
-                var result = new Result(false, ex.Message, 500);
+                var result = new Result(false, "Đã có lỗi xảy ra, vui lòng liên hệ MISA để được hỗ trợ.", 500);
 
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;

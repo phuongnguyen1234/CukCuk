@@ -35,5 +35,26 @@ namespace CukCuk.Backend.Infrastructure.Repository
             var sql = $"SELECT * FROM {table} ORDER BY `inventory_item_addition_name` ASC";
             return await connection.QueryAsync<InventoryItemAddition>(sql);
         }
+
+        public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection)
+                await dbConnection.OpenAsync();
+            else
+                connection.Open();
+
+            var table = $"`{TableName}`";
+            var sql = $"SELECT COUNT(1) FROM {table} WHERE `inventory_item_addition_name` = @Name";
+            if (excludeId.HasValue && excludeId.Value != Guid.Empty)
+            {
+                sql += " AND `inventory_item_addition_id` <> @ExcludeId";
+                return await connection.ExecuteScalarAsync<int>(sql, new { Name = name, ExcludeId = excludeId }) > 0;
+            }
+            else
+            {
+                return await connection.ExecuteScalarAsync<int>(sql, new { Name = name }) > 0;
+            }
+        }
     }
 }

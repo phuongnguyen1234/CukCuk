@@ -1,5 +1,4 @@
 ﻿using CukCuk.Backend.Core.Interfaces.Repository;
-using CukCuk.Backend.Core.Interfaces.Service;
 using FluentValidation.Results;
 using System;
 using System.Collections;
@@ -15,7 +14,7 @@ namespace CukCuk.Backend.Core.Services
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// Created by Phuong 25/02/2026
-    public abstract class BaseService<T> : IBaseService<T> where T : class
+    public abstract class BaseService<T> where T : class
     {
         protected readonly IBaseRepository<T> _repository;
 

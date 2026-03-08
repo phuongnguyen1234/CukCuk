@@ -20,8 +20,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // configure database options
-builder.Services.Configure<DatabaseOptions>(
-    builder.Configuration.GetSection("Database"));
+builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("ConnectionStrings"));
+
 
 // đăng ký DI
 // database

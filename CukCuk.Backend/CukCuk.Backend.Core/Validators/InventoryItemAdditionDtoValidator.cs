@@ -21,7 +21,21 @@ namespace CukCuk.Backend.Core.Validators
             // tên sở thích ko null
             RuleFor(x => x.InventoryItemAdditionName)
                 .NotEmpty()
-                .WithMessage("Tên sở thích không được để trống.");
+                .WithMessage("Tên sở thích không được để trống.")
+                .MaximumLength(100)
+                .WithMessage("Tên sở thích không được quá 100 ký tự.")
+                .MustAsync(async (dto, name, context, ct) =>
+                {
+                    if (string.IsNullOrWhiteSpace(name)) return false;
+
+                    Guid? excludeId = null;
+                    if (context.RootContextData.TryGetValue("ExcludeId", out var raw) && raw is Guid g && g != Guid.Empty)
+                        excludeId = g;
+
+                    var exists = await _repository.ExistsByNameAsync(name.Trim(), excludeId);
+                    return !exists;
+                })
+                .WithMessage("Tên sở thích phục vụ đã tồn tại trong hệ thống. Vui lòng chọn tên khác.");
 
             // giá sở thích >= 0
             RuleFor(x => x.InventoryItemAdditionPrice)

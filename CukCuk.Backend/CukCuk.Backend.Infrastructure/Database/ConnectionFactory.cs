@@ -1,6 +1,7 @@
 ﻿using CukCuk.Backend.Core.Interfaces.Database;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,9 +19,9 @@ namespace CukCuk.Backend.Infrastructure.Database
     {
         private readonly string _connectionString;
 
-        public ConnectionFactory(IConfiguration configuration)
+        public ConnectionFactory(IOptions<DatabaseOptions> options)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _connectionString = options.Value.ConnectionString;
         }
 
         /// <summary>

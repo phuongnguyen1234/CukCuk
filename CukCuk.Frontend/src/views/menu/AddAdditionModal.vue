@@ -143,7 +143,14 @@ async function handleSave() {
     handleClose()
   } catch (error) {
     console.error('Failed to create addition:', error)
-    showToast(error.response?.data?.UserMessage || 'Thêm mới thất bại.', 'error')
+    const responseData = error.response?.data
+    if (responseData?.errors) {
+      const firstError = Object.values(responseData.errors)[0]
+      const msg = Array.isArray(firstError) ? firstError[0] : firstError
+      showToast(msg, 'error')
+    } else {
+      showToast(responseData?.Message || 'Thêm mới thất bại.', 'error')
+    }
   }
 }
 </script>
