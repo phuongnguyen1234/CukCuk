@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -90,6 +90,11 @@ namespace CukCuk.Backend.Infrastructure.Repository
             else
                 connection.Open();
 
+            return await CreateAsync(entity, connection, null);
+        }
+
+        protected virtual async Task<Guid> CreateAsync(T entity, IDbConnection connection, IDbTransaction? transaction)
+        {
             var idProp = typeof(T).GetProperty(KeyName, BindingFlags.Public | BindingFlags.Instance);
             Guid id;
             if (idProp != null && (idProp.PropertyType == typeof(Guid) || idProp.PropertyType == typeof(Guid?)) && idProp.CanWrite)
@@ -120,7 +125,7 @@ namespace CukCuk.Backend.Infrastructure.Repository
             var table = MysqlQuote(TableName);
             var sql = $"INSERT INTO {table} ({columnList}) VALUES ({paramList})";
 
-            var affected = await connection.ExecuteAsync(sql, entity);
+            var affected = await connection.ExecuteAsync(sql, entity, transaction: transaction);
             return affected > 0 ? id : Guid.Empty;
         }
 
@@ -138,6 +143,11 @@ namespace CukCuk.Backend.Infrastructure.Repository
             else
                 connection.Open();
 
+            return await UpdateAsync(entity, connection, null);
+        }
+
+        protected virtual async Task<bool> UpdateAsync(T entity, IDbConnection connection, IDbTransaction? transaction)
+        {
             var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
                                  .Where(p => p.CanRead && p.CanWrite && !string.Equals(p.Name, KeyName, StringComparison.OrdinalIgnoreCase))
                                  .ToArray();
@@ -151,7 +161,7 @@ namespace CukCuk.Backend.Infrastructure.Repository
             var key = MysqlQuote(KeyName.ToSnakeCase());
             var sql = $"UPDATE {table} SET {setClause} WHERE {key} = @{KeyName}";
 
-            var affected = await connection.ExecuteAsync(sql, entity);
+            var affected = await connection.ExecuteAsync(sql, entity, transaction: transaction);
             return affected > 0;
         }
 
@@ -168,10 +178,15 @@ namespace CukCuk.Backend.Infrastructure.Repository
             else
                 connection.Open();
 
+            return await DeleteAsync(id, connection, null);
+        }
+
+        protected virtual async Task<bool> DeleteAsync(Guid id, IDbConnection connection, IDbTransaction? transaction)
+        {
             var table = MysqlQuote(TableName);
             var key = MysqlQuote(KeyName.ToSnakeCase());
             var sql = $"DELETE FROM {table} WHERE {key} = @Id";
-            var affected = await connection.ExecuteAsync(sql, new { Id = id });
+            var affected = await connection.ExecuteAsync(sql, new { Id = id }, transaction: transaction);
             return affected > 0;
         }
     }

@@ -164,21 +164,19 @@ namespace CukCuk.Backend.Core.Services
                 entity.InventoryItemImage = path;
             }
 
-            var id = await base.CreateAsync(entity);
-
-            // Nếu DTO có addition ids, chèn vào bảng nối
-            if (dto.AdditionIds != null && dto.AdditionIds.Any())
+            try
             {
-                await _inventoryRepository.AddItemAdditionsAsync(id, dto.AdditionIds);
+                // Sử dụng phương thức transaction từ repository
+                var id = await _inventoryRepository.CreateWithRelationsAsync(entity, dto.AdditionIds ?? new List<Guid>(), dto.KitchenIds ?? new List<Guid>());
+                return id;
             }
-
-            // Nếu DTO có kitchen ids, chèn vào bảng nối
-            if (dto.KitchenIds != null && dto.KitchenIds.Any())
+            catch
             {
-                await _inventoryRepository.AddItemKitchensAsync(id, dto.KitchenIds);
+                // Nếu lưu DB thất bại thì xóa ảnh vừa upload để tránh rác
+                if (!string.IsNullOrEmpty(entity.InventoryItemImage))
+                    await _fileStorage.DeleteFileAsync(entity.InventoryItemImage);
+                throw;
             }
-
-            return id;
         }
 
         /// <summary>
@@ -239,9 +237,6 @@ namespace CukCuk.Backend.Core.Services
                 existing.InventoryItemImage = previousImagePath;
             }
 
-            var updated = await base.UpdateAsync(existing);
-            if (!updated) return false;
-
             // Đồng bộ associations (many-to-many)
             var currentAdditions = await _inventoryRepository.GetAdditionsForItemAsync(id);
             var currentAdditionIds = currentAdditions.Select(a => a.InventoryItemAdditionId).ToHashSet();
@@ -249,16 +244,6 @@ namespace CukCuk.Backend.Core.Services
 
             var toAdd = newAdditionIds.Except(currentAdditionIds).ToArray();
             var toRemove = currentAdditionIds.Except(newAdditionIds).ToArray();
-
-            if (toAdd.Any())
-            {
-                await _inventoryRepository.AddItemAdditionsAsync(id, toAdd);
-            }
-
-            if (toRemove.Any())
-            {
-                await _inventoryRepository.RemoveItemAdditionsAsync(id, toRemove);
-            }
 
             // Đồng bộ Kitchens (many-to-many)
             var currentKitchens = await _inventoryRepository.GetKitchensForItemAsync(id);
@@ -268,17 +253,18 @@ namespace CukCuk.Backend.Core.Services
             var kitchensToAdd = newKitchenIds.Except(currentKitchenIds).ToArray();
             var kitchensToRemove = currentKitchenIds.Except(newKitchenIds).ToArray();
 
-            if (kitchensToAdd.Any())
+            try
             {
-                await _inventoryRepository.AddItemKitchensAsync(id, kitchensToAdd);
+                // Gọi repository để update trong 1 transaction
+                return await _inventoryRepository.UpdateWithRelationsAsync(existing, toAdd, toRemove, kitchensToAdd, kitchensToRemove);
             }
-
-            if (kitchensToRemove.Any())
+            catch
             {
-                await _inventoryRepository.RemoveItemKitchensAsync(id, kitchensToRemove);
+                // Nếu lưu DB thất bại và vừa có upload ảnh mới thì xóa ảnh mới đi để tránh rác
+                if (replacingImage && !string.IsNullOrEmpty(existing.InventoryItemImage))
+                    await _fileStorage.DeleteFileAsync(existing.InventoryItemImage);
+                throw;
             }
-
-            return true;
         }
 
         /// <summary>
@@ -294,11 +280,11 @@ namespace CukCuk.Backend.Core.Services
                 return false; // Không tìm thấy, trả về false
             }
 
-            // Xóa links trước (an toàn nếu có ràng buộc FK)
-            await _inventoryRepository.RemoveAllItemAdditionsAsync(id);
-            await _inventoryRepository.RemoveAllItemKitchensAsync(id);
+            // Gọi phương thức xóa có transaction từ repository
+            var dbDeleted = await _inventoryRepository.DeleteWithRelationsAsync(id);
 
-            if (!string.IsNullOrWhiteSpace(existing.InventoryItemImage))
+            // Nếu xóa DB thành công, thì mới xóa file ảnh
+            if (dbDeleted && !string.IsNullOrWhiteSpace(existing.InventoryItemImage))
             {
                 try
                 {
@@ -306,11 +292,13 @@ namespace CukCuk.Backend.Core.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Không thể xóa ảnh khi xóa món {Id}: {Path}", id, existing.InventoryItemImage);
+                    // Ghi log cảnh báo nhưng không ném lỗi, vì DB đã xóa thành công.
+                    // File ảnh mồ côi có thể được dọn dẹp sau.
+                    _logger.LogWarning(ex, "Không thể xóa ảnh của món đã xóa {Id}: {Path}", id, existing.InventoryItemImage);
                 }
             }
 
-            return await base.DeleteAsync(id);
+            return dbDeleted;
         }
 
         /// <summary>

@@ -254,7 +254,7 @@ function onAdditionChange(selectedItem, index) {
 
 .info-box {
   display: flex;
-  align-items: flex-start; /* Căn icon lên trên cùng nếu text bị xuống dòng */
+  align-items: center;
   gap: 8px;
   margin-bottom: 16px;
 }

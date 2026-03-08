@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +23,126 @@ namespace CukCuk.Backend.Infrastructure.Repository
         public InventoryItemRepository(IDbConnectionFactory connectionFactory)
             : base(connectionFactory)
         {
+        }
+
+        /// <summary>
+        /// Tạo món ăn cùng với các thông tin liên quan trong một transaction
+        /// </summary>
+        public async Task<Guid> CreateWithRelationsAsync(InventoryItem item, IEnumerable<Guid> additionIds, IEnumerable<Guid> kitchenIds)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection) await dbConnection.OpenAsync(); else connection.Open();
+            
+            using var tran = connection.BeginTransaction();
+            try
+            {
+                // 1. Tạo món ăn
+                var id = await CreateAsync(item, connection, tran);
+
+                // 2. Thêm sở thích phục vụ
+                if (additionIds != null && additionIds.Any())
+                {
+                    var sqlAdd = @"INSERT INTO `item_addition` (`inventory_item_id`, `inventory_item_addition_id`) VALUES (@InventoryItemId, @InventoryItemAdditionId)";
+                    await connection.ExecuteAsync(sqlAdd, additionIds.Distinct().Select(aid => new { InventoryItemId = id, InventoryItemAdditionId = aid }), transaction: tran);
+                }
+
+                // 3. Thêm nơi chế biến
+                if (kitchenIds != null && kitchenIds.Any())
+                {
+                    var sqlKitchen = @"INSERT INTO `item_kitchen` (`inventory_item_id`, `kitchen_id`) VALUES (@InventoryItemId, @KitchenId)";
+                    await connection.ExecuteAsync(sqlKitchen, kitchenIds.Distinct().Select(kid => new { InventoryItemId = id, KitchenId = kid }), transaction: tran);
+                }
+
+                tran.Commit();
+                return id;
+            }
+            catch
+            {
+                tran.Rollback();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật món ăn và đồng bộ các thông tin liên quan trong một transaction
+        /// </summary>
+        public async Task<bool> UpdateWithRelationsAsync(InventoryItem item, IEnumerable<Guid> addAdditions, IEnumerable<Guid> removeAdditions, IEnumerable<Guid> addKitchens, IEnumerable<Guid> removeKitchens)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection) await dbConnection.OpenAsync(); else connection.Open();
+
+            using var tran = connection.BeginTransaction();
+            try
+            {
+                // 1. Cập nhật thông tin món
+                var updated = await UpdateAsync(item, connection, tran);
+                if (!updated)
+                {
+                    tran.Rollback();
+                    return false;
+                }
+
+                // 2. Xử lý sở thích (Thêm/Xóa)
+                if (addAdditions != null && addAdditions.Any())
+                {
+                    var sqlAdd = @"INSERT INTO `item_addition` (`inventory_item_id`, `inventory_item_addition_id`) VALUES (@InventoryItemId, @InventoryItemAdditionId)";
+                    await connection.ExecuteAsync(sqlAdd, addAdditions.Select(aid => new { InventoryItemId = item.InventoryItemId, InventoryItemAdditionId = aid }), transaction: tran);
+                }
+                if (removeAdditions != null && removeAdditions.Any())
+                {
+                    var sqlRemove = @"DELETE FROM `item_addition` WHERE `inventory_item_id` = @InventoryItemId AND `inventory_item_addition_id` IN @Ids";
+                    await connection.ExecuteAsync(sqlRemove, new { InventoryItemId = item.InventoryItemId, Ids = removeAdditions }, transaction: tran);
+                }
+
+                // 3. Xử lý nơi chế biến (Thêm/Xóa)
+                if (addKitchens != null && addKitchens.Any())
+                {
+                    var sqlAddK = @"INSERT INTO `item_kitchen` (`inventory_item_id`, `kitchen_id`) VALUES (@InventoryItemId, @KitchenId)";
+                    await connection.ExecuteAsync(sqlAddK, addKitchens.Select(kid => new { InventoryItemId = item.InventoryItemId, KitchenId = kid }), transaction: tran);
+                }
+                if (removeKitchens != null && removeKitchens.Any())
+                {
+                    var sqlRemoveK = @"DELETE FROM `item_kitchen` WHERE `inventory_item_id` = @InventoryItemId AND `kitchen_id` IN @Ids";
+                    await connection.ExecuteAsync(sqlRemoveK, new { InventoryItemId = item.InventoryItemId, Ids = removeKitchens }, transaction: tran);
+                }
+
+                tran.Commit();
+                return true;
+            }
+            catch
+            {
+                tran.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteWithRelationsAsync(Guid id)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection) await dbConnection.OpenAsync(); else connection.Open();
+
+            using var tran = connection.BeginTransaction();
+            try
+            {
+                // 1. Xóa các liên kết sở thích
+                var sqlAdditions = @"DELETE FROM `item_addition` WHERE `inventory_item_id` = @Id";
+                await connection.ExecuteAsync(sqlAdditions, new { Id = id }, transaction: tran);
+
+                // 2. Xóa các liên kết nơi chế biến
+                var sqlKitchens = @"DELETE FROM `item_kitchen` WHERE `inventory_item_id` = @Id";
+                await connection.ExecuteAsync(sqlKitchens, new { Id = id }, transaction: tran);
+
+                // 3. Xóa món ăn chính
+                var deleted = await DeleteAsync(id, connection, tran);
+
+                tran.Commit();
+                return deleted;
+            }
+            catch
+            {
+                tran.Rollback();
+                throw;
+            }
         }
 
         /// <summary>
@@ -279,89 +399,6 @@ namespace CukCuk.Backend.Infrastructure.Repository
         #region Item Additions
 
         /// <summary>
-        /// Thêm các addition vào InventoryItem
-        /// </summary>
-        /// <param name="inventoryItemId"></param>
-        /// <param name="additionIds"></param>
-        /// <returns></returns>
-        public async Task AddItemAdditionsAsync(Guid inventoryItemId, IEnumerable<Guid> additionIds)
-        {
-            if (additionIds == null) return;
-
-            var ids = additionIds.Where(id => id != Guid.Empty).Distinct().ToArray();
-            if (!ids.Any()) return;
-
-            using var connection = _connectionFactory.CreateConnection();
-            if (connection is DbConnection dbConnection)
-                await dbConnection.OpenAsync();
-            else
-                connection.Open();
-
-            using var tran = connection.BeginTransaction();
-            try
-            {
-                var sql = @"
-                    INSERT INTO `item_addition` (`inventory_item_id`, `inventory_item_addition_id`)
-                    VALUES (@InventoryItemId, @InventoryItemAdditionId)";
-
-                foreach (var addId in ids)
-                {
-                    await connection.ExecuteAsync(sql, new
-                    {
-                        InventoryItemId = inventoryItemId,
-                        InventoryItemAdditionId = addId
-                    }, transaction: tran);
-                }
-
-                tran.Commit();
-            }
-            catch
-            {
-                tran.Rollback();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Xóa các addition khỏi InventoryItem
-        /// </summary>
-        public async Task RemoveItemAdditionsAsync(Guid inventoryItemId, IEnumerable<Guid> additionIds)
-        {
-            if (additionIds == null) return;
-
-            var ids = additionIds.Where(id => id != Guid.Empty).Distinct().ToArray();
-            if (!ids.Any()) return;
-
-            using var connection = _connectionFactory.CreateConnection();
-            if (connection is DbConnection dbConnection)
-                await dbConnection.OpenAsync();
-            else
-                connection.Open();
-
-            var sql = @"DELETE FROM `item_addition`
-                        WHERE `inventory_item_id` = @InventoryItemId
-                          AND `inventory_item_addition_id` IN @Ids";
-            await connection.ExecuteAsync(sql, new { InventoryItemId = inventoryItemId, Ids = ids });
-        }
-
-        /// <summary>
-        /// Xóa tất cả addition khỏi InventoryItem
-        /// </summary>
-        /// <param name="inventoryItemId"></param>
-        /// <returns></returns>
-        public async Task RemoveAllItemAdditionsAsync(Guid inventoryItemId)
-        {
-            using var connection = _connectionFactory.CreateConnection();
-            if (connection is DbConnection dbConnection)
-                await dbConnection.OpenAsync();
-            else
-                connection.Open();
-
-            var sql = @"DELETE FROM `item_addition` WHERE `inventory_item_id` = @Id";
-            await connection.ExecuteAsync(sql, new { Id = inventoryItemId });
-        }
-
-        /// <summary>
         /// Lấy danh sách addition của InventoryItem
         /// </summary>
         /// <param name="inventoryItemId"></param>
@@ -386,87 +423,6 @@ namespace CukCuk.Backend.Infrastructure.Repository
         #endregion
 
         #region Item Kitchens
-
-        /// <summary>
-        /// Thêm các kitchen vào InventoryItem
-        /// </summary>
-        /// <param name="inventoryItemId"></param>
-        /// <param name="kitchenIds"></param>
-        /// <returns></returns>
-        public async Task AddItemKitchensAsync(Guid inventoryItemId, IEnumerable<Guid> kitchenIds)
-        {
-            if (kitchenIds == null) return;
-
-            var ids = kitchenIds.Where(id => id != Guid.Empty).Distinct().ToArray();
-            if (!ids.Any()) return;
-
-            using var connection = _connectionFactory.CreateConnection();
-            if (connection is DbConnection dbConnection)
-                await dbConnection.OpenAsync();
-            else
-                connection.Open();
-
-            using var tran = connection.BeginTransaction();
-            try
-            {
-                var sql = @"
-                    INSERT INTO `item_kitchen` (`inventory_item_id`, `kitchen_id`)
-                    VALUES (@InventoryItemId, @KitchenId)";
-
-                foreach (var kId in ids)
-                {
-                    await connection.ExecuteAsync(sql, new
-                    {
-                        InventoryItemId = inventoryItemId,
-                        KitchenId = kId
-                    }, transaction: tran);
-                }
-
-                tran.Commit();
-            }
-            catch
-            {
-                tran.Rollback();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Xóa các kitchen khỏi InventoryItem
-        /// </summary>
-        public async Task RemoveItemKitchensAsync(Guid inventoryItemId, IEnumerable<Guid> kitchenIds)
-        {
-            if (kitchenIds == null) return;
-
-            var ids = kitchenIds.Where(id => id != Guid.Empty).Distinct().ToArray();
-            if (!ids.Any()) return;
-
-            using var connection = _connectionFactory.CreateConnection();
-            if (connection is DbConnection dbConnection)
-                await dbConnection.OpenAsync();
-            else
-                connection.Open();
-
-            var sql = @"DELETE FROM `item_kitchen`
-                        WHERE `inventory_item_id` = @InventoryItemId
-                          AND `kitchen_id` IN @Ids";
-            await connection.ExecuteAsync(sql, new { InventoryItemId = inventoryItemId, Ids = ids });
-        }
-
-        /// <summary>
-        /// Xóa tất cả kitchen khỏi InventoryItem
-        /// </summary>
-        public async Task RemoveAllItemKitchensAsync(Guid inventoryItemId)
-        {
-            using var connection = _connectionFactory.CreateConnection();
-            if (connection is DbConnection dbConnection)
-                await dbConnection.OpenAsync();
-            else
-                connection.Open();
-
-            var sql = @"DELETE FROM `item_kitchen` WHERE `inventory_item_id` = @Id";
-            await connection.ExecuteAsync(sql, new { Id = inventoryItemId });
-        }
 
         /// <summary>
         /// Lấy danh sách kitchen của InventoryItem

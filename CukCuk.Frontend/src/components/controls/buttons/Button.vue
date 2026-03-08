@@ -24,10 +24,6 @@
 <script setup>
 import { computed, useSlots, Comment, Text } from 'vue'
 
-/**
- * Base Button Component
- * Created by: Gemini Code Assist
- */
 const props = defineProps({
   /**
    * Loại button (màu sắc)

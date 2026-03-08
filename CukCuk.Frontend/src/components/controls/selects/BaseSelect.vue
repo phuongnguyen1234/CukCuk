@@ -16,6 +16,7 @@ const props = defineProps({
 const emit = defineEmits(['open', 'close', 'add'])
 
 const isOpen = ref(false)
+const optionsRef = ref(null)
 const containerRef = ref(null)
 const optionsStyle = ref({})
 
@@ -44,7 +45,11 @@ const close = () => {
 }
 
 const handleClickOutside = (event) => {
-  if (containerRef.value && !containerRef.value.contains(event.target)) {
+  const isClickInsideTrigger = containerRef.value && containerRef.value.contains(event.target)
+  // The options are teleported, so we need to check them separately.
+  const isClickInsideOptions = optionsRef.value && optionsRef.value.contains(event.target)
+
+  if (!isClickInsideTrigger && !isClickInsideOptions) {
     close()
   }
 }
@@ -145,6 +150,7 @@ defineExpose({ open, close, toggle, isOpen })
 
     <Teleport to="body">
       <div
+        ref="optionsRef"
         v-if="isOpen"
         class="select-options"
         :class="{ 'opens-up': direction === 'top' }"
