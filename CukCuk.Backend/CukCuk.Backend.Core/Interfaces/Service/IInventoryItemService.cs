@@ -58,33 +58,6 @@ namespace CukCuk.Backend.Core.Interfaces.Service
         /// <returns></returns>
         Task<bool> DeleteAsync(Guid id);
 
-        // // Quản lý sở thích phục vụ của món
-        // Task<IEnumerable<Guid>> GetAdditionIdsAsync(Guid inventoryItemId);
-
-        // /// <summary>
-        // /// Thêm danh sách sở thích cho món
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <param name="additionIds"></param>
-        // /// <returns></returns>
-        // Task<bool> AddAdditionsAsync(Guid inventoryItemId, IEnumerable<Guid> additionIds);
-
-        // /// <summary>
-        // /// Xóa danh sách sở thích cho món
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <param name="additionIds"></param>
-        // /// <returns></returns>
-        // Task<bool> RemoveAdditionsAsync(Guid inventoryItemId, IEnumerable<Guid> additionIds);
-
-        // /// <summary>
-        // /// Xóa sở thích cho món
-        // /// </summary>
-        // /// <param name="inventoryItemId"></param>
-        // /// <param name="additionId"></param>
-        // /// <returns></returns>
-        // Task<bool> RemoveAdditionAsync(Guid inventoryItemId, Guid additionId);
-
         /// <summary>
         /// Tạo code theo tên món
         /// </summary>

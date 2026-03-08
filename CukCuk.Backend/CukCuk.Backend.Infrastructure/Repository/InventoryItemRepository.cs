@@ -208,7 +208,7 @@ namespace CukCuk.Backend.Infrastructure.Repository
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var searchParamName = "SearchParam";
-                parameters.Add(searchParamName, $"%{search.Trim()}%");
+                parameters.Add(searchParamName, $"{search.Trim()}%");
                 whereClauses.Add($"(LOWER(i.`inventory_item_name`) LIKE LOWER(@{searchParamName}) OR LOWER(i.`inventory_item_code`) LIKE LOWER(@{searchParamName}))");
             }
 
