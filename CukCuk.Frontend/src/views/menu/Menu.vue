@@ -693,7 +693,7 @@ async function handleSave(updatedItem) {
   // Sau khi lưu thành công, reload lại danh sách
   await loadData()
   isOpen.value = false
-  showToast('Thêm món thành công!')
+  showToast('Lưu món thành công!')
 }
 
 async function handleSaveAndAdd(itemJustSaved) {
@@ -706,7 +706,7 @@ async function handleSaveAndAdd(itemJustSaved) {
   newItem.inventoryItemCode = '' // Sẽ kích hoạt sinh mã tự động trong form
 
   selectedItem.value = newItem
-  showToast('Thêm món thành công! Sẵn sàng thêm món mới.')
+  showToast('Lưu món thành công! Sẵn sàng thêm món mới.')
 }
 
 function deleteItem(item) {
